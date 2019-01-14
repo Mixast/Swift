@@ -42,36 +42,33 @@ func Keyboard_input() {     // Проверяем составленный ма�
     }
 }
 
-func Parity(Par: Int) {     // 1. Написать функцию, которая определяет, четное число или нет.
-        switch Par {
-        case _ where Par % 2 == 0:
-            Koint = false
-            break
-        case _ where Par % 2 != 0:
-            break
-        default:
-            print("Ошибка")
+func Parity(Par: Int) -> Bool {     // 1. Написать функцию, которая определяет, четное число или нет.
+        if Par % 2 == 0 {
+        return false
         }
+        else if Par % 2 != 0 {
+        return true
+        }
+        return true
 }
 
-func Division(Div: Int) {       // 2. Написать функцию, которая определяет, делится ли число без остатка на 3.
-        switch Div {
-        case _ where Div % 3 == 0:
-            Koint = false
-            break
-        case _ where Div % 3 != 0:
-            break
-        default:
-            print("Ошибка")
+func Division(Div: Int) -> Bool {       // 2. Написать функцию, которая определяет, делится ли число без остатка на 3.
+        if Div % 3 == 0 {
+        return false
         }
+        else if Div % 3 != 0 {
+        return true
+        }
+        return true
 }
 
 func Delete () {        // Функция для удаления из массива всех четных чисел и все чисел, которые не делятся на 3.
     var Point : Int = 0
     while Point < Array_one.count {
-        Koint = true
-        Parity(Par: Int(Array_one[Point]))
-        Division(Div: Int(Array_one[Point]))
+        Koint = Parity(Par: Int(Array_one[Point]))
+        if Koint == true {
+        Koint = Division(Div: Int(Array_one[Point]))
+        }
         if Koint == false {
             Array_one.remove(at: Point)
             Point = Point - 1
