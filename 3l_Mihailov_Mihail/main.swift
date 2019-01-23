@@ -13,20 +13,21 @@ enum Parameters: String {       // enum для заполнения
 
 func NewCar(parameter: Parameters) -> String {      // функция для ввода данных
     var key = String()
+    print(parameter.rawValue)
     switch  parameter {
-    case Parameters.brand : print(Parameters.brand.rawValue); key = readLine()!
-    case Parameters.mark : print(Parameters.mark.rawValue); key = readLine()!
-    case Parameters.yearIssue : print(Parameters.yearIssue.rawValue); key = readLine()!
+    case Parameters.brand : key = readLine()!
+    case Parameters.mark : key = readLine()!
+    case Parameters.yearIssue : key = readLine()!
     if (Int(key)) != nil {}
     else { key = "0"
         print("Ошибка вы ввели не число!!!")
         }
-    case Parameters.luggageCapacity : print(Parameters.luggageCapacity.rawValue); key = readLine()!
+    case Parameters.luggageCapacity : key = readLine()!
     if (Double(key)) != nil {}
     else { key = "0.0"
         print("Ошибка вы ввели не число!!!")
         }
-    case Parameters.luggageStatus : print(Parameters.luggageStatus.rawValue); key = readLine()!
+    case Parameters.luggageStatus : key = readLine()!
     if (Double(key)) != nil {}
     else { key = "0.0"
         print("Ошибка вы ввели не число!!!")
