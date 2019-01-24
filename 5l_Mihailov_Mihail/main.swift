@@ -249,8 +249,16 @@ class Truck: Car, TruckCarable, ConsolePrintable {
 
 var array = [Any]()
 
-func NewLightCar() -> Any { // Функция добавляет новый автомобиль
-    var car = LightCar(brand: NewCar(parameter: Parameters.brand), mark: NewCar(parameter: Parameters.mark), yearIssue: Int(NewCar(parameter: Parameters.yearIssue))!, luggageCapacity: Double(NewCar(parameter: Parameters.luggageCapacity))!, power: Double(NewCar(parameter: Parameters.power))!, numberOfDoors: Int(NewCar(parameter: Parameters.numberOfDoors))!)
+struct parametrsLightCar {
+    var brand: String, mark: String, yearIssue: Int, luggageCapacity: Double, power: Double, numberOfDoors: Int
+}
+
+struct parametrsTruckCar {
+    var brand: String, mark: String ,yearIssue: Int, luggageCapacity: Double, loadСapacity: Double, cargo: String
+}
+
+func NewLightCar(parametrs: parametrsLightCar) -> Any { // Функция добавляет новый автомобиль
+    var car = LightCar(brand: parametrs.brand, mark: parametrs.mark, yearIssue: parametrs.yearIssue, luggageCapacity: parametrs.luggageCapacity, power: parametrs.power, numberOfDoors: parametrs.numberOfDoors)
     var koint = true
     while koint {
         print("Для указания дополнительных параметров нажмите 1, для продолжения любую другую цыфру")
@@ -267,9 +275,9 @@ func NewLightCar() -> Any { // Функция добавляет новый ав
                     car.EngineRunning(Count: readLine()!)
                 } else if Cout == "3" {
                     while koint {
-                    print(Parameters.luggageStatus.rawValue)
-                    car.LuggageStatus(Count: readLine()!)
-                    koint = false
+                        print(Parameters.luggageStatus.rawValue)
+                        car.LuggageStatus(Count: readLine()!)
+                        koint = false
                     }
                     koint = true
                 } else if Cout == "4" {
@@ -283,8 +291,8 @@ func NewLightCar() -> Any { // Функция добавляет новый ав
     return car.description
 }
 
-func NewTruckCar() -> Any { // Функция добавляет новый автомобиль
-    var car = Truck(brand: NewCar(parameter: Parameters.brand), mark: NewCar(parameter: Parameters.mark), yearIssue: Int(NewCar(parameter: Parameters.yearIssue))!, luggageCapacity: Double(NewCar(parameter: Parameters.luggageCapacity))!, loadСapacity: Double(NewCar(parameter: Parameters.loadСapacity))!, cargo: NewCar(parameter: Parameters.cargo))
+func NewTruckCar(parametrs: parametrsTruckCar) -> Any { // Функция добавляет новый автомобиль
+    var car = Truck(brand: parametrs.brand, mark: parametrs.mark, yearIssue: parametrs.yearIssue, luggageCapacity: parametrs.luggageCapacity, loadСapacity: parametrs.loadСapacity, cargo: parametrs.cargo)
     var koint = true
     while koint {
         print("Для указания дополнительных параметров нажмите 1, для продолжения любую другую цыфру")
@@ -301,9 +309,9 @@ func NewTruckCar() -> Any { // Функция добавляет новый ав
                     car.EngineRunning(Count: readLine()!)
                 } else if Cout == "3" {
                     while koint {
-                    print(Parameters.luggageStatus.rawValue)
-                    car.LuggageStatus(Count: readLine()!)
-                    koint = false
+                        print(Parameters.luggageStatus.rawValue)
+                        car.LuggageStatus(Count: readLine()!)
+                        koint = false
                     }
                     koint = true
                 } else if Cout == "4" {
@@ -317,25 +325,21 @@ func NewTruckCar() -> Any { // Функция добавляет новый ав
     return car.description
 }
 //// Созданем новые автомобил на парковке
-func NewCarBD()
-{
-    var koint = true
-    while koint {
-        print("Для создания нового легкового автомобиля 1 , для создания нового грузового автомобиля 2, для внесения данных в базу любую другую цыфру")
-        let cout = readLine()
-        if cout == "1" {
-            array.append(NewLightCar())
-        } else if cout == "2" {
-            array.append(NewTruckCar())
-        } else {
-            koint = false
-            print("Ваша база: ")
-            for i in 0..<array.count { print(array[i]) }   //6. Вывести значения свойств экземпляров в консоль.
-        }
+
+var koint = true
+while koint {
+    print("Для создания нового легкового автомобиля 1 , для создания нового грузового автомобиля 2, для внесения данных в базу любую другую цыфру")
+    let cout = readLine()
+    if cout == "1" {
+        array.append(NewLightCar(parametrs: parametrsLightCar (brand: NewCar(parameter: Parameters.brand), mark: NewCar(parameter: Parameters.mark), yearIssue: Int(NewCar(parameter: Parameters.yearIssue))!, luggageCapacity: Double(NewCar(parameter: Parameters.luggageCapacity))!, power: Double(NewCar(parameter: Parameters.power))!, numberOfDoors: Int(NewCar(parameter: Parameters.numberOfDoors))!)))
+    } else if cout == "2" {
+        array.append(NewTruckCar(parametrs: parametrsTruckCar (brand: NewCar(parameter: Parameters.brand), mark: NewCar(parameter: Parameters.mark), yearIssue: Int(NewCar(parameter: Parameters.yearIssue))!, luggageCapacity: Double(NewCar(parameter: Parameters.luggageCapacity))!, loadСapacity: Double(NewCar(parameter: Parameters.loadСapacity))!, cargo: NewCar(parameter: Parameters.cargo))))
+    } else {
+        koint = false
+        print("Ваша база: ")
+        for i in 0..<array.count { print(array[i]) }   //6. Вывести значения свойств экземпляров в консоль.
     }
 }
-
-NewCarBD()
 
 //5. Создать несколько объектов каждого класса. Применить к ним различные действия.
 
@@ -435,5 +439,7 @@ if cout == "1" {
     instance.printDescription()
     copy.printDescription()
 }
+
+
 
 
