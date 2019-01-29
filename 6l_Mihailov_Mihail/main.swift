@@ -78,7 +78,7 @@ extension Driving {
     }
 }
 
-class human: Walking {      //  Class ходилки human
+class Human: Walking {      //  Class ходилки human
     let name: String
     var lieDown: Bool
     var move: Bool
@@ -99,13 +99,13 @@ class human: Walking {      //  Class ходилки human
     }
 }
 
-extension human: CustomStringConvertible {
+extension Human: CustomStringConvertible {
     var description : String {
         return "Name: \(name), LieDown: \(lieDown()), Move: \(move())"
     }
 }
 
-class car: Driving {        //  Class гонки car
+class Car: Driving {        //  Class гонки car
     let name: String
     var speed: Bool
     var drive: Bool
@@ -133,14 +133,14 @@ class car: Driving {        //  Class гонки car
     }
 }
 
-extension car: CustomStringConvertible {
+extension Car: CustomStringConvertible {
     var description : String {
         return "Name: \(name), Speed: \(speed()), Drive: \(drive()), Ignition:  \(ignition()))"
     }
 }
 
 
-class airplane: Flying {        //  Class леталки airplane
+class Airplane: Flying {        //  Class леталки airplane
     let name: String
     var gainAltitude: Bool
     var flight: Bool
@@ -168,7 +168,7 @@ class airplane: Flying {        //  Class леталки airplane
     }
 }
 
-extension airplane: CustomStringConvertible {
+extension Airplane: CustomStringConvertible {
     var description : String {
         return "Name: \(name), GainAltitude: \(gainAltitude()), Flight: \(flight()), Ignition:  \(ignition()))"
     }
@@ -192,23 +192,21 @@ struct Queue <T> {                   //  Очередь игр
         return players.removeLast()
     }
     public var head: T? {
-        if isEmpty {
+        guard !isEmpty else {
             print("Элементов не обнаруженно. Массив пуст.")
             return nil
-        } else {
-            print("Последняя игра в колекции: \(players.last!)")
-            return players.last
         }
+        print("Последняя игра в колекции: \(players.last!)")
+        return players.last
     }
     
     public var front: T? {
-        if isEmpty {
+        guard !isEmpty else {
             print("Элементов не обнаруженно. Массив пуст.")
             return nil
-        } else {
-            print("Первая игра в колекции: \(players.first!)")
-            return players.first
         }
+        print("Первая игра в колекции: \(players.first!)")
+        return players.first
     }
 }
 
@@ -225,24 +223,24 @@ extension Queue {
 }
 
 
-var shooter = Queue<human>()
+var shooter = Queue<Human>()
 
-shooter.push(human(name: "Call of Duty", lieDown: false, move: true))
-shooter.push(human(name: "Doom", lieDown: false, move: true))
+shooter.push(Human(name: "Call of Duty", lieDown: false, move: true))
+shooter.push(Human(name: "Doom", lieDown: false, move: true))
 
 print(shooter)
 
 shooter.head?.funcLieDown(status: true)
 
-shooter.push(human(name: "Duck Hunt", lieDown: false, move: false))
+shooter.push(Human(name: "Duck Hunt", lieDown: false, move: false))
 
 let filterGameOne = shooter.myFilter(predicate: {$0.move() == GameOption.moveTrue.rawValue })
 print("Игры по фильтру: \(filterGameOne) \n")
 
-var Race = Queue<car>()
+var Race = Queue<Car>()
 
-Race.push(car(name: "Need for Speed", speed: true, drive: true, ignition: true))
-Race.push(car(name: "Road Rash", speed: false, drive: true, ignition: false))
+Race.push(Car(name: "Need for Speed", speed: true, drive: true, ignition: true))
+Race.push(Car(name: "Road Rash", speed: false, drive: true, ignition: false))
 print(Race)
 let filterGameTwo = Race.myFilter(predicate: {$0.speed() == "Автомобиль не умеет разгоняться"})
 print("Игры по фильтру: \(filterGameTwo)")
