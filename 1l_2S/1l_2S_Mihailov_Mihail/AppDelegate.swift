@@ -15,10 +15,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        IQKeyboardManager.shared.enable = true
+        IQKeyboardManager.shared.enable = true                 //Включаем сдвиг при наезде клавиатуры на поле ввода
         IQKeyboardManager.shared.enableDebugging = true
-        IQKeyboardManager.shared.enableAutoToolbar = false
-        IQKeyboardManager.shared.keyboardDistanceFromTextField = 100
+        IQKeyboardManager.shared.enableAutoToolbar = false              //Убираем Auto Toolbar
+        IQKeyboardManager.shared.keyboardDistanceFromTextField = 100       // Делаем растояние сдвига = 100
         return true
     }
 
