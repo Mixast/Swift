@@ -2069,7 +2069,7 @@ public class IQKeyboardManager: NSObject, UIGestureRecognizerDelegate {
     private func showLog(_ logString: String) {
         
         if enableDebugging {
-            print("IQKeyboardManager: " + logString)
+//            print("IQKeyboardManager: " + logString)   Спамим собитиями в трей
         }
     }
 }
