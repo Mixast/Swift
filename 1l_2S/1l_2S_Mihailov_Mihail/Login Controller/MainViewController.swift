@@ -1,10 +1,3 @@
-//
-//  MainViewController.swift
-//  1l_2S_Mihailov_Mihail
-//
-//  Created by Лекс Лютер on 28/02/2019.
-//  Copyright © 2019 Лекс Лютер. All rights reserved.
-//
 import Foundation
 import UIKit
 import SafariServices
@@ -28,8 +21,8 @@ class MainViewController: UIViewController {
     // MARK: -
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.title = "Main Board"
         
+        navigationItem.title = "Main Board"
         let emptyView = UIView(frame: .zero)    // Делаем navigationItem прозрачным
         self.navigationItem.leftBarButtonItem = UIBarButtonItem(customView: emptyView)
         
