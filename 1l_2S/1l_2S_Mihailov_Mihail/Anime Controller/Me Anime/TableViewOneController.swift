@@ -1,7 +1,7 @@
 import UIKit
 import WebKit
 
-class TableViewOneController: UIViewController, UITableViewDelegate,  UITableViewDataSource {
+class TableViewOneController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var hop = 10
     
@@ -164,17 +164,24 @@ class TableViewOneController: UIViewController, UITableViewDelegate,  UITableVie
         cell.animeStepp.value = Double(base[transportLine].favoriteАnime[indexPath.section].series)
         cell.videoPlayerButton.tag = indexPath.section
         
+        
         if cell.videoPlayerButton.statusPlay == (indexPath.section, true) {     // Подключаем видео плеер если нажапа кнопка
-            cell.isOn = cell.videoPlayerButton.isSelected
             cell.videoPlayerImage.image = UIImage()
             cell.videoPlayerButton.setImage(UIImage(), for: .normal)
             cell.videoPlayerButton.isUserInteractionEnabled = false
+            cell.loadingVideo.flack = false
             for i in 1...animeBase.count {
                 if animeBase[i-1].name == base[transportLine].favoriteАnime[indexPath.section].name {
-                    if let url = NSURL(string: "https://video.sibnet.ru/shell.php?videoid=" + animeBase[i-1].seriesURL[base[transportLine].favoriteАnime[indexPath.section].series-1]) {
+                    if let url = NSURL(string: "https://video.sibnet.ru/shell.php?videoid=" + animeBase[i-1].seriesURL[base[transportLine].favoriteАnime[indexPath.section].series-1])
+                    {
                         let requstObj = URLRequest(url: url as URL)
                         cell.videoPlayer.isHidden = false
                         cell.videoPlayer.load(requstObj)
+                    }
+                }
+                if cell.videoPlayer.isLoading {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {  // Костыль с задержкой
+                        cell.loadingVideo.flack = true
                     }
                 }
             }
@@ -185,9 +192,11 @@ class TableViewOneController: UIViewController, UITableViewDelegate,  UITableVie
             cell.videoPlayerButton.setImage(#imageLiteral(resourceName: "icons8-play-100"), for: .normal)
             cell.videoPlayerButton.isUserInteractionEnabled = true
             cell.videoPlayerImage?.image = UIImage(named: base[transportLine].favoriteАnime[indexPath.section].name + ".jpg")
+            
         }
         return cell
     }
+
     
     // MARK: - viewForFooterInSection
     // Добавляем описание аниме внизу
