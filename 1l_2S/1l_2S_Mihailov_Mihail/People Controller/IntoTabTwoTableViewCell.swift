@@ -18,7 +18,7 @@ class IntoTabTwoTableViewCell: UITableViewCell {
     }
 
     
-    func createIconAvatar(image name: String) {
+    func createIconAvatar(image name: String) {  // Создание иконок
         
         let imageContainer = UIView(frame: CGRect(x: 10, y: 15, width: imageSize.width, height: imageSize.height))
         
@@ -43,8 +43,24 @@ class IntoTabTwoTableViewCell: UITableViewCell {
         self.addSubview(imageContainer)
         imageContainer.addSubview(imageView)
         
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(imageTapped(tapGestureRecognizer:)))
+        imageContainer.isUserInteractionEnabled = true
+        imageContainer.addGestureRecognizer(tapGestureRecognizer)
+    
     }
     
+    @objc func imageTapped(tapGestureRecognizer: UITapGestureRecognizer) //Анимация по нажатию
+    {
+        UIView.animate(withDuration: 6,
+                       delay: 0.2,
+                       usingSpringWithDamping: 0.4,
+                       initialSpringVelocity: 4,
+                       options: [],
+                       animations: {
+                        self.viewWithTag(100)!.transform = self.viewWithTag(100)!.transform.rotated(by: CGFloat(Double.pi))
+                        self.viewWithTag(100)!.transform = .identity
+        })
+    }
     
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
