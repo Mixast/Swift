@@ -1,25 +1,30 @@
 import UIKit
 
 class TabTwoTableController: UIViewController, UITableViewDataSource, UITableViewDelegate {
-
+    
     @IBOutlet weak var image: UIImageView!
     @IBOutlet weak var tableView: UITableView!
+    
+    
     var transportLine = Int()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
         navigationItem.title = "Profile"  // Имя поля
         self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
         self.navigationController?.navigationBar.shadowImage = UIImage()
         self.navigationController?.navigationBar.isTranslucent = true // Делаем прозрачным navigationBar
-        
+        if base[transportLine].favoriteАnime.count == 0 {
+        image.image = UIImage(named:  "Hp.jpg")
+        } else {
         image.image = UIImage(named:  base[transportLine].favoriteАnime[0].name +  ".jpg")
+        }
         tableView.backgroundColor = .clear
         tableView.tableFooterView = UIView() //Убираем пустые строки
+        
     }
-
+    
         // MARK: - Создаем имена секций
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {     // Создание section решеток
