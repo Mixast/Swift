@@ -5,6 +5,7 @@ struct News {
     var name: String
     var news: String
     var likeMetr: Int
+    var likeStatus: Bool
     var flack: Bool
     var image: String
     init() {
@@ -13,6 +14,7 @@ struct News {
         self.news = ""
         self.likeMetr = 0
         self.flack = false
+        self.likeStatus = true
         self.image = ""
     }
 }
@@ -51,6 +53,18 @@ struct Profile {         // Структура для базы
         self.birthday = ""
         self.avatar = ""
         self.favoriteАnime = []
+    }
+}
+
+struct Razmermer {   // Структура для размеров ячейки при анимациях
+    var id: Int
+    var size: Float
+    var flack: Bool
+    init(id: Int, size: Float) {
+        self.id = id
+        self.flack = true
+        self.size = size
+        
     }
 }
 
@@ -195,7 +209,7 @@ func fillinganimeBase(completioHandler : (() ->Void)?) {
     animeBase.append(Аnime())
     animeBase[animePoint].id = animePoint
     animeBase[animePoint].name = "Стальной алхимик"
-    animeBase[animePoint].series = 3
+    animeBase[animePoint].series = 51
     animeBase[animePoint].seriesURL = ["2884233", "2884241", "2884246"]
     animeBase[animePoint].description = "В этом мире существуют алхимики — люди, владеющие искусством алхимии, способностью манипулировать материей и преобразовывать вещество. "
     animePoint+=1
