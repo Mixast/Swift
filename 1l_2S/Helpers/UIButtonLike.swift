@@ -33,6 +33,32 @@ import UIKit
             color.setStroke()
             bezierPath.stroke()
         } else {
+            
+            let originX = self.frame.origin.x
+            let originY = self.frame.origin.y
+            let sizeWidth = self.frame.size.width
+            let sizeHeight = self.frame.size.height
+            print(originX)
+            UIView.animate(withDuration: 2,
+                           delay: 0.2,
+                           usingSpringWithDamping: 0.4,
+                           initialSpringVelocity: 4,
+                           options: [],
+                           animations: {
+                            self.frame = CGRect(x: originX, y: originY, width: sizeWidth + 10, height: sizeHeight + 10)
+                            
+                            
+            }, completion: { (_) in
+                UIView.animate(withDuration: 1,
+                               delay: 0,
+                               usingSpringWithDamping: 0.8,
+                               initialSpringVelocity: 4,
+                               options: [],
+                               animations: {
+                               self.frame = CGRect(x: originX, y: originY, width: sizeWidth, height: sizeHeight)
+                })
+            })
+            
             color.setFill()
             bezierPath.fill()
         }
