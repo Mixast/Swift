@@ -133,7 +133,7 @@ class TableViewTwoController: UITableViewController, UISearchBarDelegate {
         
             cell.textLabel?.text = base[idx+indexPath.row].name
             cell.imageView?.image = UIImage(named: base[idx+indexPath.row].avatar + ".jpg") // Добавляем аватарку
-            cell.imageView?.layer.cornerRadius = 30                                     // Делаем её круглой
+            cell.imageView?.layer.cornerRadius = 25.0                                    // Делаем её круглой
             cell.imageView?.layer.masksToBounds = true
             cell.backgroundColor = #colorLiteral(red: 0.6000000238, green: 0.6000000238, blue: 0.6000000238, alpha: 1)
         }
