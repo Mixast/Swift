@@ -1,21 +1,15 @@
-//
-//  TabOneCollectionViewController.swift
-//  1l_2S_Mihailov_Mihail
-//
-//  Created by Лекс Лютер on 04/03/2019.
-//  Copyright © 2019 Лекс Лютер. All rights reserved.
-//
+
 
 import UIKit
 
 private let reuseIdentifier = "Cell"
 
 class TabOneCollectionViewController: UICollectionViewController {
-    var transportLine = ""
+    var transportLineColl = Int()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.title = transportLine  // Имя поля
+        navigationItem.title = base[transportLine].favoriteАnime[transportLineColl].name  // Имя поля
         
         self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
         self.navigationController?.navigationBar.shadowImage = UIImage()
@@ -24,7 +18,7 @@ class TabOneCollectionViewController: UICollectionViewController {
         // Устанавливает background
         let imageView : UIImageView = {
             let iv = UIImageView()
-            iv.image = UIImage(named: transportLine + ".jpg")
+            iv.image = UIImage(named: base[transportLine].favoriteАnime[transportLineColl].name + ".jpg")
             iv.contentMode = .scaleAspectFill
             return iv
         }()
@@ -46,11 +40,10 @@ class TabOneCollectionViewController: UICollectionViewController {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
        
         let backgroundImageView = UIImageView(frame: UIScreen.main.bounds) // Делаем картинки
-        backgroundImageView.image = UIImage(named: transportLine + ".jpg")
+        backgroundImageView.image = UIImage(named: base[transportLine].favoriteАnime[transportLineColl].name + " \(indexPath.row+1).jpg")
         backgroundImageView.contentMode = .scaleToFill
         backgroundImageView.translatesAutoresizingMaskIntoConstraints = false
         cell.backgroundView = backgroundImageView
-        
         return cell
     }
 

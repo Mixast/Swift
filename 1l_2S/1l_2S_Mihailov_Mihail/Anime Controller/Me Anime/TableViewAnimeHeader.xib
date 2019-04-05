@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="TableViewAnimeHeader" customModule="_l_2S_Mihailov_Mihail" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="40"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ulW-jg-1Qw">
+                    <rect key="frame" x="0.0" y="0.0" width="375" height="45"/>
+                    <subviews>
+                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Стальной алхимик 1.jpg" translatesAutoresizingMaskIntoConstraints="NO" id="4xg-Lq-ZCs">
+                            <rect key="frame" x="6" y="0.0" width="37.5" height="45"/>
+                        </imageView>
+                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="252" verticalHuggingPriority="251" image="icons8-vnim-50" translatesAutoresizingMaskIntoConstraints="NO" id="BGm-CS-ny4">
+                            <rect key="frame" x="272" y="6" width="37" height="28"/>
+                        </imageView>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="S: 200" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="IQs-v7-VyE">
+                            <rect key="frame" x="315" y="0.0" width="54" height="40"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="54" id="YeR-H7-MGd"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                            <nil key="textColor"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eqk-Zh-3F4">
+                            <rect key="frame" x="49.5" y="0.0" width="216.5" height="45"/>
+                            <state key="normal" title="Watch Anime"/>
+                        </button>
+                    </subviews>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstItem="BGm-CS-ny4" firstAttribute="leading" secondItem="eqk-Zh-3F4" secondAttribute="trailing" constant="6" id="1mq-Fc-US3"/>
+                        <constraint firstItem="4xg-Lq-ZCs" firstAttribute="width" secondItem="ulW-jg-1Qw" secondAttribute="width" multiplier="0.1" id="5nS-s8-ay0"/>
+                        <constraint firstAttribute="trailing" secondItem="IQs-v7-VyE" secondAttribute="trailing" constant="6" id="BxL-5a-0oN"/>
+                        <constraint firstItem="IQs-v7-VyE" firstAttribute="leading" secondItem="BGm-CS-ny4" secondAttribute="trailing" constant="6" id="Ewj-oj-eza"/>
+                        <constraint firstItem="BGm-CS-ny4" firstAttribute="top" secondItem="ulW-jg-1Qw" secondAttribute="top" constant="6" id="OI2-QM-FdG"/>
+                        <constraint firstItem="4xg-Lq-ZCs" firstAttribute="top" secondItem="ulW-jg-1Qw" secondAttribute="top" id="VK9-2M-E7M"/>
+                        <constraint firstItem="IQs-v7-VyE" firstAttribute="top" secondItem="ulW-jg-1Qw" secondAttribute="top" id="VmN-pI-ogv"/>
+                        <constraint firstAttribute="bottom" secondItem="BGm-CS-ny4" secondAttribute="bottom" constant="11" id="cbt-U3-jhg"/>
+                        <constraint firstItem="eqk-Zh-3F4" firstAttribute="top" secondItem="ulW-jg-1Qw" secondAttribute="top" id="eVs-cq-HZq"/>
+                        <constraint firstItem="4xg-Lq-ZCs" firstAttribute="leading" secondItem="ulW-jg-1Qw" secondAttribute="leading" constant="6" id="gdf-X7-Lam"/>
+                        <constraint firstItem="eqk-Zh-3F4" firstAttribute="leading" secondItem="4xg-Lq-ZCs" secondAttribute="trailing" constant="6" id="grX-Al-b7P"/>
+                        <constraint firstAttribute="bottom" secondItem="IQs-v7-VyE" secondAttribute="bottom" constant="5" id="mk9-Xw-nst"/>
+                        <constraint firstAttribute="bottom" secondItem="IQs-v7-VyE" secondAttribute="bottom" constant="5" id="oeq-bZ-cei"/>
+                        <constraint firstAttribute="bottom" secondItem="4xg-Lq-ZCs" secondAttribute="bottom" id="sKw-qe-q20"/>
+                        <constraint firstItem="IQs-v7-VyE" firstAttribute="top" secondItem="ulW-jg-1Qw" secondAttribute="top" id="vZZ-9y-MOP"/>
+                        <constraint firstAttribute="bottom" secondItem="eqk-Zh-3F4" secondAttribute="bottom" id="zuc-jF-ec0"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="ulW-jg-1Qw" secondAttribute="trailing" id="6EO-kz-2oc"/>
+                <constraint firstItem="ulW-jg-1Qw" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="WF1-dr-AyY"/>
+                <constraint firstAttribute="bottom" secondItem="ulW-jg-1Qw" secondAttribute="bottom" constant="-5" id="lPo-Ha-hJm"/>
+                <constraint firstItem="ulW-jg-1Qw" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="zxS-Pf-BBn"/>
+            </constraints>
+            <nil key="simulatedTopBarMetrics"/>
+            <nil key="simulatedBottomBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <connections>
+                <outlet property="animeButton" destination="eqk-Zh-3F4" id="FVq-3Y-dmF"/>
+                <outlet property="animeImage" destination="4xg-Lq-ZCs" id="kdV-tZ-ZHg"/>
+                <outlet property="animeSeries" destination="IQs-v7-VyE" id="D1O-vH-m42"/>
+                <outlet property="viewAnime" destination="ulW-jg-1Qw" id="SeQ-Bf-cGc"/>
+                <outlet property="wowNewAnime" destination="BGm-CS-ny4" id="BXo-iA-tPM"/>
+            </connections>
+            <point key="canvasLocation" x="53.600000000000001" y="52.173913043478265"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="icons8-vnim-50" width="37.5" height="37.5"/>
+        <image name="Стальной алхимик 1.jpg" width="960" height="720"/>
+    </resources>
+</document>
