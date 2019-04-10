@@ -8,6 +8,7 @@ class LoaderController: UIView {
         }
     }
     
+    
     override func draw(_ rect: CGRect) {
         
         if flack == false {
@@ -34,6 +35,7 @@ class LoaderController: UIView {
             fadeAndScale.repeatCount = .infinity
             
             imageView.layer.add(fadeAndScale, forKey: nil)
+            
         } else {
             self.subviews.forEach({ $0.removeFromSuperview() })
         }
