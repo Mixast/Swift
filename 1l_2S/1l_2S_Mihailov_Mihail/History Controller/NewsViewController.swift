@@ -6,8 +6,13 @@ class NewsViewController: UIViewController, UITableViewDelegate,  UITableViewDat
     @IBOutlet weak var dayControl: SelectDayControl!
     var rowSizer = [Razmermer]()
     var flack = true
+    var sizeWidth = CGFloat(0)
+    var sizeHeight = CGFloat(0)
     
     override func viewDidLoad() {
+        
+        sizeWidth = self.view.frame.size.width/4
+        sizeHeight = self.view.frame.size.height/5
 
         fillingLikeBase { // Составляем список новостей
             DispatchQueue.main.async {
@@ -121,17 +126,21 @@ class NewsViewController: UIViewController, UITableViewDelegate,  UITableViewDat
         cell.textLabel?.text = likeBase[indexPath.section].news
         cell.textLabel?.lineBreakMode = .byWordWrapping
         cell.textLabel?.numberOfLines = 0
-        cell.textLabel?.tag = (indexPath.section+3)*3
+        cell.textLabel?.tag = (indexPath.section*100)+1
         
         cell.imageView?.image = imageTitle                                           // Добавляем аватарку
         cell.imageView?.layer.cornerRadius = 30                                     // Делаем её круглой
         cell.imageView?.layer.masksToBounds = true
+        cell.imageView?.frame.size.width = self.sizeWidth
+        cell.imageView?.frame.size.height = self.sizeHeight
+        cell.imageView?.frame.origin.x = 15
+        cell.imageView?.frame.origin.y = 12
 
         let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(imageTapped(tapGestureRecognizer:)))
         cell.imageView?.isUserInteractionEnabled = true
         cell.imageView?.addGestureRecognizer(tapGestureRecognizer)
-        cell.imageView?.tag = (indexPath.section+2)*2
-        
+        cell.imageView?.tag = (indexPath.section*100)+2
+    
         cell.backgroundColor = #colorLiteral(red: 0.6000000238, green: 0.6000000238, blue: 0.6000000238, alpha: 1)
         
         
@@ -142,18 +151,17 @@ class NewsViewController: UIViewController, UITableViewDelegate,  UITableViewDat
     @objc func imageTapped(tapGestureRecognizer: UITapGestureRecognizer)
     {
      
-        
         let touch = tapGestureRecognizer.location(in: tableView)
         if let indexPath = tableView.indexPathForRow(at: touch) {
-            let originX = self.view.viewWithTag((indexPath.section+2)*2)!.frame.origin.x
-            let originY = self.view.viewWithTag((indexPath.section+2)*2)!.frame.origin.y
-            let sizeWidth = self.view.viewWithTag((indexPath.section+2)*2)!.frame.size.width
-            let sizeHeight = self.view.viewWithTag((indexPath.section+2)*2)!.frame.size.height
-        
-            let IMGoriginX = self.view.viewWithTag((indexPath.section+3)*3)!.frame.origin.x
-            let IMGoriginY = self.view.viewWithTag((indexPath.section+3)*3)!.frame.origin.y
-            let IMGsizeWidth = self.view.viewWithTag((indexPath.section+3)*3)!.frame.size.width
-            let IMGsizeHeight = self.view.viewWithTag((indexPath.section+3)*3)!.frame.size.height
+//            let originX = self.view.viewWithTag((indexPath.section+1)*3)!.frame.origin.x
+//            let originY = self.view.viewWithTag((indexPath.section+1)*3)!.frame.origin.y
+            let originSizeWidth = self.view.viewWithTag((indexPath.section*100)+2)!.frame.size.width
+            let originSizeHeight = self.view.viewWithTag((indexPath.section*100)+2)!.frame.size.height
+            
+            let IMGoriginX = self.view.viewWithTag((indexPath.section*100)+1)!.frame.origin.x
+            let IMGoriginY = self.view.viewWithTag((indexPath.section*100)+1)!.frame.origin.y
+            let IMGsizeWidth = self.view.viewWithTag((indexPath.section*100)+1)!.frame.size.width
+            let IMGsizeHeight = self.view.viewWithTag((indexPath.section*100)+1)!.frame.size.height
  
             if self.rowSizer[indexPath.section].flack {
                 
@@ -166,10 +174,13 @@ class NewsViewController: UIViewController, UITableViewDelegate,  UITableViewDat
                            options: [.curveEaseOut , .beginFromCurrentState],
                            animations: {
                             self.rowSizer[indexPath.section].size =  350
+                            self.sizeWidth += 80
+                            self.sizeHeight += 100
                             self.tableView.beginUpdates()
                             self.tableView.endUpdates()
-                            self.view.viewWithTag((indexPath.section+2)*2)!.frame = CGRect(x: originX, y: originY, width: sizeWidth + 100, height: sizeHeight + 100)
-                            self.view.viewWithTag((indexPath.section+3)*3)!.frame = CGRect(x: IMGoriginX + 100, y: IMGoriginY, width: IMGsizeWidth - 100, height: IMGsizeHeight + 100)
+                            self.view.viewWithTag((indexPath.section*100)+2)!.frame = CGRect(x: 15, y: 12, width: originSizeWidth+80, height: originSizeHeight+100)
+                            self.view.viewWithTag((indexPath.section*100)+1)!.frame = CGRect(x: IMGoriginX + 80, y: IMGoriginY, width: IMGsizeWidth - 80, height: IMGsizeHeight + 100)
+
                 })
             } else {
                 
@@ -180,11 +191,14 @@ class NewsViewController: UIViewController, UITableViewDelegate,  UITableViewDat
                                initialSpringVelocity: 4,
                                options: [],
                                animations: {
-                                self.view.viewWithTag((indexPath.section+2)*2)!.frame = CGRect(x: originX, y: originY, width: sizeWidth - 100, height: sizeHeight - 100)
-                                self.view.viewWithTag((indexPath.section+3)*3)!.frame = CGRect(x: IMGoriginX - 100, y: IMGoriginY, width: IMGsizeWidth + 100, height: IMGsizeHeight - 100)
+                                self.sizeWidth = self.view.frame.size.width/4
+                                self.sizeHeight = self.view.frame.size.height/5
+                                self.view.viewWithTag((indexPath.section*100)+2)!.frame = CGRect(x: 15, y: 12, width: originSizeWidth-80, height: originSizeHeight-100)
+                                self.view.viewWithTag((indexPath.section*100)+1)!.frame = CGRect(x: IMGoriginX - 80, y: IMGoriginY, width: IMGsizeWidth + 80, height: IMGsizeHeight - 100)
                                 self.rowSizer[indexPath.section].size =  250
                                 self.tableView.beginUpdates()
                                 self.tableView.endUpdates()
+                                
                                 
                 })
             }
