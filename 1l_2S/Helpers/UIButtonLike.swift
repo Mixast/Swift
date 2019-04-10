@@ -28,7 +28,7 @@ import UIKit
         let bezierPath = UIBezierPath(heartIn: self.bounds)
         let color: UIColor = #colorLiteral(red: 0.9254902005, green: 0.2352941185, blue: 0.1019607857, alpha: 1)
         
-        
+        //  Анимаци сердцебиения
         if bool {
             color.setStroke()
             bezierPath.stroke()
@@ -38,7 +38,7 @@ import UIKit
             let originY = self.frame.origin.y
             let sizeWidth = self.frame.size.width
             let sizeHeight = self.frame.size.height
-            print(originX)
+            
             UIView.animate(withDuration: 2,
                            delay: 0.2,
                            usingSpringWithDamping: 0.4,
@@ -91,7 +91,11 @@ extension UIBezierPath {
         
         //Left Bottom Line
         self.close()
+        
     }
+    
+    
+    
 }
 
 extension Int {
