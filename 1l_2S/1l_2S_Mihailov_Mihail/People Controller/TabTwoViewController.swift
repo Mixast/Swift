@@ -6,15 +6,11 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
     @IBOutlet weak var tableView: UITableView!
     
     
-    var transportLine = Int()
+    var transportLine = Int(0)
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        navigationItem.title = "Profile"  // Имя поля
-        self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
-        self.navigationController?.navigationBar.shadowImage = UIImage()
-        self.navigationController?.navigationBar.isTranslucent = true // Делаем прозрачным navigationBar
         if base[transportLine].favoriteАnime.count == 0 {
         image.image = UIImage(named:  "Hp.jpg")
         } else {
@@ -23,6 +19,52 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
         tableView.backgroundColor = .clear
         tableView.tableFooterView = UIView() //Убираем пустые строки
         
+        self.setNavigationBar()
+        
+        let swipeRight = UISwipeGestureRecognizer(target: self, action: #selector(respondToSwipeGesture))
+        swipeRight.direction = UISwipeGestureRecognizer.Direction.right
+        self.view.addGestureRecognizer(swipeRight)  //Ловим свайп
+        
+    }
+    
+    func setNavigationBar() {
+        let navBar = UINavigationBar(frame: CGRect(x: 0, y: 20, width: self.view.frame.size.width, height: 50))
+        navBar.backgroundColor = .clear
+        navBar.setBackgroundImage(UIImage(), for: .default)
+        navBar.shadowImage = UIImage()
+        navBar.isTranslucent = true
+        let navItem = UINavigationItem(title: "Profile")
+        navItem.largeTitleDisplayMode = .automatic
+        
+        let doneItem = UIBarButtonItem(title: "Friend list", style: .done, target: nil, action: #selector(handleShowIndexPath))
+        doneItem.tintColor = #colorLiteral(red: 0.9529411793, green: 0.6862745285, blue: 0.1333333403, alpha: 1)
+        navItem.leftBarButtonItem = doneItem
+        
+        navBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor : #colorLiteral(red: 0.9529411793, green: 0.6862745285, blue: 0.1333333403, alpha: 1)]
+        navBar.setItems([navItem], animated: false)
+        navBar.tag = 999
+        self.view.addSubview(navBar)
+        
+    }
+    
+    @objc func handleShowIndexPath() {      //Подключение любой кнопки
+        dismiss(animated: true)
+    }
+    
+    
+    //     MARK: - Переход по свайпу вправо
+    @objc func respondToSwipeGesture(gesture: UIGestureRecognizer)  // Возврат к предыдушему меню по свайпу
+    {
+        if let swipeGesture = gesture as? UISwipeGestureRecognizer
+        {
+            switch swipeGesture.direction
+            {
+            case UISwipeGestureRecognizer.Direction.right:
+                dismiss(animated: true)
+            default:
+                break
+            }
+        }
     }
     
         // MARK: - Создаем имена секций
@@ -78,6 +120,7 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
     }
 
     override func didRotate(from fromInterfaceOrientation: UIInterfaceOrientation) {    //reload data при повороте
+        self.view.viewWithTag(999)!.frame.size.width = self.view.frame.size.width
         guard let viewWithTag = self.view.viewWithTag(100)  else {
             return
         }
@@ -111,6 +154,7 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
         cell.backgroundColor = #colorLiteral(red: 0.6000000238, green: 0.6000000238, blue: 0.6000000238, alpha: 1)
         return cell
     }
+
 }
 
 
