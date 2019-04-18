@@ -1,7 +1,6 @@
 import UIKit
 
 class TabOneCollectionViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
-    
     @IBOutlet weak var backgoundImage: UIImageView!
     @IBOutlet weak var collectionView: UICollectionView!
     
@@ -9,22 +8,27 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
     var sizeHeightCell = CGFloat()
     var flack = true
     
-    var transportLineColl = Int()
+    var transportLineColl = Int(0)
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         navigationItem.title = base[transportLine].favoriteАnime[transportLineColl].name  // Имя поля
         
         self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
         self.navigationController?.navigationBar.shadowImage = UIImage()
         self.navigationController?.navigationBar.isTranslucent = true
         
+        
         backgoundImage.image = UIImage(named: base[transportLine].favoriteАnime[transportLineColl].name + ".jpg")
         collectionView.backgroundColor = .clear
         
         sizeWidthCell = self.view.frame.size.width / 3
         sizeHeightCell = self.view.frame.size.height / 4
+        
+        
     }
+    
 
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return 3
@@ -100,6 +104,7 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
         }
     
     override func viewDidLayoutSubviews() {
+        
         if self.flack == true {
             self.sizeWidthCell = self.view.frame.size.width / 3
             self.sizeHeightCell = self.view.frame.size.height / 4
