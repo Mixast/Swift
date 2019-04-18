@@ -1,8 +1,12 @@
 import UIKit
 
-class TableViewTwoController: UITableViewController, UISearchBarDelegate {
+class TableViewTwoController: UIViewController, UITableViewDelegate, UITableViewDataSource  {
     private var searching = false
     private var filteredList = [Profile]()
+
+    @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var backgroundView: UIImageView!
+    
     
     var sectionNumber = 1
     var rowNumber = [(Int, Int)]()
@@ -11,12 +15,14 @@ class TableViewTwoController: UITableViewController, UISearchBarDelegate {
         sortedPeople()
         super.viewDidLoad()
 
+        backgroundView.image = UIImage(named: "Hp.jpg")
         navigationItem.title = "Friend list"  // Имя поля
         self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
         self.navigationController?.navigationBar.shadowImage = UIImage()
         self.navigationController?.navigationBar.isTranslucent = true // Делаем прозрачным navigationBar
         
-        tableView.backgroundView = UIImageView(image: UIImage(named: "Hp.jpg"))
+        tableView.backgroundColor = .clear
+        tableView.tableFooterView = UIView() //Убираем пустые строки
         
         self.tableView.tableFooterView = UIView() //Убираем пустые строки
         
@@ -68,7 +74,7 @@ class TableViewTwoController: UITableViewController, UISearchBarDelegate {
     
     // MARK: - Создание секций и их тайтлов
     
-    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {     // Создание section решеток
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {     // Создание section решеток
         let button = UIButton(type: .system)
         if searching {
             
@@ -93,7 +99,7 @@ class TableViewTwoController: UITableViewController, UISearchBarDelegate {
         return button
     }
     
-    override func numberOfSections(in tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
         if searching {
             return 1
         } else {
@@ -101,11 +107,11 @@ class TableViewTwoController: UITableViewController, UISearchBarDelegate {
         }
     }
     
-    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 18
     }
     
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if searching {
             return filteredList.count
         } else {
@@ -113,11 +119,11 @@ class TableViewTwoController: UITableViewController, UISearchBarDelegate {
         }
     }
 
-    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return CGFloat(50)
     }
 
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         var idx = 0
         if indexPath.section > 0 {
             for i in 1...indexPath.section{
@@ -125,17 +131,15 @@ class TableViewTwoController: UITableViewController, UISearchBarDelegate {
             }
         }
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "Cell") else { return UITableViewCell() }
-        
-       if searching {
+        cell.backgroundColor = #colorLiteral(red: 0.6000000238, green: 0.6000000238, blue: 0.6000000238, alpha: 1)
+        if searching {
             cell.textLabel?.text = filteredList[indexPath.row].name
             cell.imageView?.image = UIImage(named: filteredList[indexPath.row].avatar + ".jpg") // Добавляем аватарку
-       } else {
-        
+        } else {
             cell.textLabel?.text = base[idx+indexPath.row].name
             cell.imageView?.image = UIImage(named: base[idx+indexPath.row].avatar + ".jpg") // Добавляем аватарку
             cell.imageView?.layer.cornerRadius = 25.0                                    // Делаем её круглой
             cell.imageView?.layer.masksToBounds = true
-            cell.backgroundColor = #colorLiteral(red: 0.6000000238, green: 0.6000000238, blue: 0.6000000238, alpha: 1)
         }
         return cell
         
@@ -143,7 +147,7 @@ class TableViewTwoController: UITableViewController, UISearchBarDelegate {
     
 // MARK: - Переход при нажатии на строку
     
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         var idx = 0
         if indexPath.section > 0 {
@@ -157,8 +161,27 @@ class TableViewTwoController: UITableViewController, UISearchBarDelegate {
         } else {
             detailVC.transportLine = base[idx+indexPath.row].id
         }
-        self.navigationController?.pushViewController(detailVC, animated: true)
+        detailVC.transitioningDelegate = self
+        present(detailVC, animated: true)
+        
     }
    
     
 }
+
+// MARK: - Кастомная анимация перехода detailVC.transitioningDelegate
+
+extension TableViewTwoController:  UIViewControllerTransitioningDelegate {
+    func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        return animatedTransition()
+    }
+
+    func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        return animatedTransitionDismissed()
+    }
+    
+    
+}
+
+
+
