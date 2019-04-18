@@ -6,8 +6,6 @@ class MainViewController: UIViewController {
     // MARK: - IBOutlet и IBAction
     var animator: UIViewPropertyAnimator?
     
-    
-    
     @IBOutlet weak var messgeField: UITextView!
     @IBOutlet weak var carImage: UIImageView!
     
@@ -22,37 +20,19 @@ class MainViewController: UIViewController {
     
     }
     
-    // MARK: -
+    // MARK: - viewDidLoad
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        navigationItem.title = "Main Board"
         let emptyView = UIView(frame: .zero)    // Делаем navigationItem прозрачным
         self.navigationItem.leftBarButtonItem = UIBarButtonItem(customView: emptyView)
-
-        let swipeRight = UISwipeGestureRecognizer(target: self, action: #selector(respondToSwipeGesture))
-        swipeRight.direction = UISwipeGestureRecognizer.Direction.right
-        self.view.addGestureRecognizer(swipeRight)  //Ловим свайп
         
         let swipe = UIPanGestureRecognizer(target: self, action: #selector(pan))
         self.view.addGestureRecognizer(swipe) //Ловим свайп
         
         messgeField.text = "Приветствую " + base[transportLine].name + ", давненько мы не виделись." + "\n" + "Ваше любимое анимэ " + base[transportLine].favoriteАnime[0].name + " ждет))" + "\n" + "По свайпу вправа вы вернетесь на поле логина. <<-" + "\n" + "Для продолжения доведите машинку до правога края. Удачи) ->>"
         
-    }
-//     MARK: - Переход по свайпу вправо
-    @objc func respondToSwipeGesture(gesture: UIGestureRecognizer)  // Возврат к предыдушему меню по свайпу
-    {
-        if let swipeGesture = gesture as? UISwipeGestureRecognizer
-        {
-            switch swipeGesture.direction
-            {
-            case UISwipeGestureRecognizer.Direction.right:
-                self.navigationController?.popViewController(animated: true)
-            default:
-                break
-            }
-        }
+
+        
     }
     
 //     MARK: - Анимация передвижения машинки
@@ -69,11 +49,12 @@ class MainViewController: UIViewController {
         case .ended:
             animator?.stopAnimation(true)
             if self.carImage.frame.origin.x >= self.view.frame.maxX - (self.carImage.frame.size.width + 150) {
+
                 self.performSegue(withIdentifier: "goToStart", sender: self)
             }
     
         default: return
         }
     }
-   
+    
 }
