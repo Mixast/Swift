@@ -4,7 +4,7 @@ import WebKit
 class TableViewOneController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var hop = 10
-    
+    let interactive = CustomInteractiveTransition()
     
     @IBOutlet weak var tableView: UITableView!
     
@@ -16,7 +16,7 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
             }
         }
         
-        navigationItem.title = "Home"  // Имя поля
+        navigationItem.title = "Favorite anime"  // Имя поля
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Add anime", style: .plain, target: self, action: #selector(handleShowIndexPath))
  
         self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
@@ -241,9 +241,14 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let detailVC = self.storyboard?.instantiateViewController(withIdentifier: "TabOneCollectionViewController") as! TabOneCollectionViewController
-        detailVC.transportLineColl = indexPath.row
-            self.navigationController?.pushViewController(detailVC, animated: true)
+        detailVC.transportLineColl = indexPath.section
+        interactive.viewController = detailVC
+        
+        navigationController?.delegate = self
+        self.navigationController?.pushViewController(detailVC, animated: true)
     }
+    
+    
 
     // MARK: - Доп действия по сдвигу
 
@@ -295,4 +300,27 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
     
 }
 
+// MARK: - Кастомная анимация перехода navigationController?.delegate
+
+extension TableViewOneController: UINavigationControllerDelegate {
+    
+    func navigationController(_ navigationController: UINavigationController,
+                              animationControllerFor operation: UINavigationController.Operation,
+                              from fromVC: UIViewController,
+                              to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        if operation == .push {
+            return animatedTransitionTwo()
+        } else if operation == .pop {
+            return animatedTransitionTwoDismissed()
+        } else {
+            return nil
+        }
+    }
+    
+    func navigationController(_ navigationController: UINavigationController, interactionControllerFor animationController: UIViewControllerAnimatedTransitioning) -> UIViewControllerInteractiveTransitioning? {
+        
+        return interactive.hasStarted ? interactive : nil
+    }
+
+}
 
