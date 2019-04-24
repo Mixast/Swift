@@ -62,15 +62,22 @@ class TableViewTwoController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return CGFloat(18)
+        return CGFloat(50)
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "Cell") else { return UITableViewCell() }
         cell.textLabel?.text = base[indexPath.row].name
+        cell.imageView?.image = UIImage(named: base[indexPath.row].avatar + ".jpg") // Добавляем аватарку
+        cell.imageView?.layer.cornerRadius = 30                                     // Делаем её круглой
+        cell.imageView?.layer.masksToBounds = true
+        
         cell.backgroundColor = #colorLiteral(red: 0.6000000238, green: 0.6000000238, blue: 0.6000000238, alpha: 1)
         return cell
+        
     }
+    
+ 
     
 // MARK: - Переход при нажатии на строку
     
