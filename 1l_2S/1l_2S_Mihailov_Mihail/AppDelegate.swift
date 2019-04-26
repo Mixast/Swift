@@ -15,7 +15,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-       
+        
         IQKeyboardManager.shared.enable = true                 //Включаем сдвиг при наезде клавиатуры на поле ввода
         IQKeyboardManager.shared.enableDebugging = true
         IQKeyboardManager.shared.enableAutoToolbar = false              //Убираем Auto Toolbar
