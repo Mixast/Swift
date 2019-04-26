@@ -1,6 +1,38 @@
 import Foundation
+import RNCryptor
 
-struct News {
+var chek = false // Костыль для перехода в самое начало
+
+struct Keys { // Ключевые слова для keychain
+    static let login = "login"
+    static let password = "password"
+}
+
+func encryptMessage(message: String, encryptionKey: String) -> String { // encrypt текст
+    let messageData = message.data(using: .utf8)!
+    let cipherData = RNCryptor.encrypt(data: messageData, withPassword: encryptionKey)
+    return cipherData.base64EncodedString()
+}
+
+func decryptMessage(encryptedMessage: String, encryptionKey: String) -> String { // decrypt текст
+    let encryptedData = Data.init(base64Encoded: encryptedMessage)!
+    let decryptedData = try? RNCryptor.decrypt(data: encryptedData, withPassword: encryptionKey)
+    let decryptedString = String(data: decryptedData!, encoding: .utf8)!
+    return decryptedString
+}
+
+struct Friend { // Структура Friend
+    var name: String
+    var avatarName: String
+    var avatar: UIImage
+    init() {
+        self.name = ""
+        self.avatarName = ""
+        self.avatar = UIImage()
+    }
+}
+
+struct News { // Структура News
     var id: Int
     var name: String
     var news: String
@@ -19,11 +51,11 @@ struct News {
     }
 }
 
-
-struct Аnime {
+struct Аnime { // Структура Аnime
     var flack: Bool
     var id: Int
     var name: String
+    var avatar: UIImage
     var series: Int
     var seriesURL: [String]
     var description: String
@@ -34,10 +66,11 @@ struct Аnime {
         self.seriesURL = []
         self.flack = false
         self.description = ""
+        self.avatar = UIImage()
     }
 }
 
-struct Profile {         // Структура для базы
+struct Profile {         // Структура для общей базы
     var id: Int
     var name: String
     var login: String
@@ -45,6 +78,7 @@ struct Profile {         // Структура для базы
     var password: String
     var avatar: String
     var favoriteАnime: [Аnime]
+    var friends: [Friend]
     init() {
         self.id = 0
         self.name = ""
@@ -53,6 +87,7 @@ struct Profile {         // Структура для базы
         self.birthday = ""
         self.avatar = ""
         self.favoriteАnime = []
+        self.friends = []
     }
 }
 
@@ -68,14 +103,13 @@ struct Razmermer {   // Структура для размеров ячейки 
     }
 }
 
+var base = [Profile]() // Общаяя база
 
-var base = [Profile]()
-var transportLine = Int()
-
-func fillingBase(completioHandler : (() ->Void)?) {  // Заполнение базы
+func fillingBase(completioHandler : (() ->Void)?) {  // Заполнение общей базы
     var count = 0
     var point = 0
     var animePoint = 0
+    var friend = 0
     base.removeAll()
     base.append(Profile())
     base[point].id = count; count+=1
@@ -84,12 +118,17 @@ func fillingBase(completioHandler : (() ->Void)?) {  // Заполнение б�
     base[point].name = "Марк Аврелий"
     base[point].birthday = "14.02.1990"
     base[point].avatar = "mark"
+    base[point].friends.append(Friend())
+    base[point].friends[friend].name = "Алина Вей"
+    base[point].friends[friend].avatarName = "aloe"
+    friend+=1
     base[point].favoriteАnime.append(Аnime())
     base[point].favoriteАnime[animePoint].id = 0
     base[point].favoriteАnime[animePoint].name = "Beck"
     base[point].favoriteАnime[animePoint].description = "Юкио Танака, а для друзей Коюки, с детства любил петь. Впрочем, талант его не нашёл применения, и сам он ведёт обыкновенную школьную жизнь."
     base[point].favoriteАnime[animePoint].series = 3
     point+=1
+    friend = 0
     animePoint = 0
     base.append(Profile())
     base[point].id = count; count+=1
@@ -151,6 +190,22 @@ func fillingBase(completioHandler : (() ->Void)?) {  // Заполнение б�
     base[point].name = "Михаил Аустерлиц"
     base[point].birthday = "23.04.1992"
     base[point].avatar = "pop"
+    base[point].friends.append(Friend())
+    base[point].friends[friend].name = "Алина Вей"
+    base[point].friends[friend].avatarName = "aloe"
+    friend+=1
+    base[point].friends.append(Friend())
+    base[point].friends[friend].name = "Хлоя Мауер"
+    base[point].friends[friend].avatarName = "hloya"
+    friend+=1
+    base[point].friends.append(Friend())
+    base[point].friends[friend].name = "Марк Аврелий"
+    base[point].friends[friend].avatarName = "mark"
+    friend+=1
+    base[point].friends.append(Friend())
+    base[point].friends[friend].name = "Макс Фрай"
+    base[point].friends[friend].avatarName = "max"
+    friend+=1
     base[point].favoriteАnime.append(Аnime())
     base[point].favoriteАnime[animePoint].id = 5
     base[point].favoriteАnime[animePoint].name = "Восхождение героя щита"
@@ -165,26 +220,27 @@ func fillingBase(completioHandler : (() ->Void)?) {  // Заполнение б�
     point+=1
     animePoint = 0
     
-    
-    var coint = 0
-    while coint < base.count-1{
-        if base[coint].name > base[coint+1].name {
-            base.append(base[coint])
-            base.remove(at: coint)
-        } else {
-            coint+=1
-        }
-    }
     for i in 1...base.count {
+        if base[i-1].friends.count != 0 {
+            for m in 1...base[i-1].friends.count {
+                base[i-1].friends[m-1].avatar = UIImage(named: base[i-1].friends[m-1].avatarName + ".jpg")!
+            }
+            for m in 1...base[i-1].favoriteАnime.count {
+                base[i-1].favoriteАnime[m-1].avatar = UIImage(named: base[i-1].favoriteАnime[m-1].name + ".jpg")!
+            }
+        }
         base[i-1].id = i-1
     }
+    
     completioHandler?()
 }
 
-var animeBase = [Аnime]()
-var animelist = [Аnime]()
-func fillinganimeBase(completioHandler : (() ->Void)?) {
+var animeBase = [Аnime]() // Посный список Аниме
+var animelist = [Аnime]() // Предлагаемый список Аниме
+
+func fillinganimeBase(completioHandler : (() ->Void)?) { // Составление списка аниме
     var animePoint = 0
+    animeBase.removeAll()
     animeBase.append(Аnime())
     animeBase[animePoint].id = animePoint
     animeBase[animePoint].name = "Beck"
@@ -228,14 +284,19 @@ func fillinganimeBase(completioHandler : (() ->Void)?) {
     animeBase[animePoint].description = "Наофуми Иватани вместе с тремя другими людьми был призван в параллельный мир, чтобы стать его Героем. При переносе в другой мир каждый из них получил специальную экипировку, которая соответствует типу Героя. Наш же протагонист получил в руки легендарный щит и решил отправиться в путешествие по этому сказочному миру."
     animePoint+=1
     
+    for m in 1...animeBase.count {
+        animeBase[m-1].avatar = UIImage(named: animeBase[m-1].name + ".jpg")!
+    }
+    
     animelist=animeBase
     completioHandler?()
 }
 
-var likeBase = [News]()
+var likeBase = [News]() // База новосте
 
 func fillingLikeBase(completioHandler : (() ->Void)?) {
     var news = 0
+    likeBase.removeAll()
     likeBase.append(News())
     likeBase[news].id = news
     likeBase[news].image = "news1"
@@ -267,6 +328,29 @@ func fillingLikeBase(completioHandler : (() ->Void)?) {
     likeBase[news].news = "«Эта история полна печали. С этого момента, давайте окунёмся в неторопливую и прекрасную историю, что произошла давным давно». Шива, маленькая девочка, любящая прогуляться по округе, живёт в пустой деревне со своим стражем, монстровидным джентльменом. Он запрещает ей выходить за пределы деревни, иначе она может быть проклята. Но Шива очень любопытна и жаждет внешнего мира. В чем же заключается проклятие?"
     news+=1
     completioHandler?()
+}
+
+
+class MainProfile {         // Структура профиля пользователя Singleton
+    var name = ""
+    var birthday = ""
+    var avatar = ""
+    var favoriteАnime = [Аnime]()
+    var friends = [Friend]()
+    private init() {}
+    static let instance = MainProfile()
+}
+
+
+
+class FriendProfile {         // Структура профиля друга Singleton
+    var name = ""
+    var birthday = ""
+    var avatar = ""
+    var favoriteАnime = [Аnime]()
+    var friends = [Friend]()
+    private init() {}
+    static let instance = FriendProfile()
 }
 
 
