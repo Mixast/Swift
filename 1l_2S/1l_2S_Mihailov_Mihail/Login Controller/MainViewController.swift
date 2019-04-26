@@ -2,16 +2,17 @@ import Foundation
 import UIKit
 import SafariServices
 
+
 class MainViewController: UIViewController {
     // MARK: - IBOutlet и IBAction
+    let mainProfile = MainProfile.instance
     var animator: UIViewPropertyAnimator?
     
     @IBOutlet weak var messgeField: UITextView!
     @IBOutlet weak var carImage: UIImageView!
     
     @IBAction func watchigButton(_ sender: UIButton) { // Переход на страницу поиска в интернете
-        
-        let screenName =  String(base[transportLine].favoriteАnime[0].name).addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+        let screenName =  String(self.mainProfile.favoriteАnime[0].name).addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
         let url = "https://shikimori.org/animes?search=" + screenName!
         let urlString = NSURL(string:url)
         
@@ -23,17 +24,27 @@ class MainViewController: UIViewController {
     // MARK: - viewDidLoad
     override func viewDidLoad() {
         super.viewDidLoad()
-        let emptyView = UIView(frame: .zero)    // Делаем navigationItem прозрачным
-        self.navigationItem.leftBarButtonItem = UIBarButtonItem(customView: emptyView)
+        
+
+  
+        
+        
         
         let swipe = UIPanGestureRecognizer(target: self, action: #selector(pan))
         self.view.addGestureRecognizer(swipe) //Ловим свайп
         
-        messgeField.text = "Приветствую " + base[transportLine].name + ", давненько мы не виделись." + "\n" + "Ваше любимое анимэ " + base[transportLine].favoriteАnime[0].name + " ждет))" + "\n" + "По свайпу вправа вы вернетесь на поле логина. <<-" + "\n" + "Для продолжения доведите машинку до правога края. Удачи) ->>"
-        
-
+        messgeField.text = "Приветствую " + self.mainProfile.name + ", давненько мы не виделись." + "\n" + "Ваше любимое анимэ " + self.mainProfile.favoriteАnime[0].name + " ждет))" + "\n" + "По свайпу вправа вы вернетесь на поле логина. <<-" + "\n" + "Для продолжения доведите машинку до правога края. Удачи) ->>"
         
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        if chek { // Костыль для перехода в самое начало
+            dismiss(animated: true)
+            chek = false
+        }
+    }
+    
+
     
 //     MARK: - Анимация передвижения машинки
     @objc func pan(_ recognizer: UIPanGestureRecognizer) {
@@ -49,8 +60,15 @@ class MainViewController: UIViewController {
         case .ended:
             animator?.stopAnimation(true)
             if self.carImage.frame.origin.x >= self.view.frame.maxX - (self.carImage.frame.size.width + 150) {
-
-                self.performSegue(withIdentifier: "goToStart", sender: self)
+                self.tabBarController?.tabBar.isHidden = false
+                DispatchQueue.main.async(){
+                    let newViewController = self.storyboard?.instantiateViewController(withIdentifier: "LoginViewController") as! LoginViewController
+                    
+                    let customViewControllersArray : NSArray = [newViewController]
+                    self.navigationController?.viewControllers = customViewControllersArray as! [UIViewController]
+                    
+                    self.performSegue(withIdentifier: "goToStartTwo", sender: self)
+                }
             }
     
         default: return
