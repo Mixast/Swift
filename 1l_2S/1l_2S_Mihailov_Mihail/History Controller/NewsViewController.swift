@@ -23,6 +23,9 @@ class NewsViewController: UIViewController, UITableViewDelegate,  UITableViewDat
             }
         }
         super.viewDidLoad()
+        
+      
+  
         navigationItem.title = "News"  // Имя поля
         self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
         self.navigationController?.navigationBar.shadowImage = UIImage()
@@ -54,7 +57,7 @@ class NewsViewController: UIViewController, UITableViewDelegate,  UITableViewDat
         header?.historyButton.titleLabel?.lineBreakMode = .byWordWrapping
         header?.historyButton.titleLabel?.numberOfLines = 0
         header?.historyButton.tag = section
-        header?.historyButton.addTarget(self, action: #selector(handleExpandClose), for: .touchDownRepeat)
+        header?.historyButton.addTarget(self, action: #selector(handleExpandClose), for: .touchDown)
         header?.historyButton.setTitleColor(#colorLiteral(red: 0.9529411793, green: 0.6862745285, blue: 0.1333333403, alpha: 1), for: .normal)
 
         header?.likeLabel.font = UIFont.systemFont(ofSize: 14)
@@ -153,8 +156,7 @@ class NewsViewController: UIViewController, UITableViewDelegate,  UITableViewDat
      
         let touch = tapGestureRecognizer.location(in: tableView)
         if let indexPath = tableView.indexPathForRow(at: touch) {
-//            let originX = self.view.viewWithTag((indexPath.section+1)*3)!.frame.origin.x
-//            let originY = self.view.viewWithTag((indexPath.section+1)*3)!.frame.origin.y
+
             let originSizeWidth = self.view.viewWithTag((indexPath.section*100)+2)!.frame.size.width
             let originSizeHeight = self.view.viewWithTag((indexPath.section*100)+2)!.frame.size.height
             
