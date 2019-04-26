@@ -241,15 +241,53 @@ class CustomSegue: UIStoryboardSegue {
                                         width: source.view.frame.width,
                                         height: source.view.frame.height)
         
-        UIView.animate(withDuration: 2, delay: 0.0, usingSpringWithDamping: 0.49, initialSpringVelocity: 0.81, options: [], animations: { () -> Void in
+        UIView.animate(withDuration: 2.5, delay: 0.0, usingSpringWithDamping: 0.3, initialSpringVelocity: 1.3, options: [], animations: { () -> Void in
             
             self.source.view.frame = sourceViewTargetFrame
             self.destination.view.frame = destinationViewTargetFrame
             
         }) { (finished) -> Void in
+            self.source.removeFromParent()
             self.source.present(self.destination, animated: false, completion: nil)
         }
     }
+}
+
+// MARK: - Кастомная анимация перехода UIStoryboardSegue (возврат)
+
+class CustomSegueReturn: UIStoryboardSegue {
+    override func perform() {
+        scale()
+    }
+    func scale() {
+        
+        guard let containerView = source.view.superview else { return }
+        
+        let containerViewFrame = containerView.frame
+        let sourceViewTargetFrame = CGRect(x: containerViewFrame.width,
+                                           y: 0,
+                                           width: source.view.frame.width,
+                                           height: source.view.frame.height)
+        let destinationViewTargetFrame = source.view.frame
+
+        containerView.addSubview(destination.view)
+        
+        destination.view.frame = CGRect(x: -containerViewFrame.width,
+                                        y: 0,
+                                        width: source.view.frame.width,
+                                        height: source.view.frame.height)
+        
+        UIView.animate(withDuration: 2.5, delay: 0.0, usingSpringWithDamping: 0.3, initialSpringVelocity: 1.3, options: [], animations: { () -> Void in
+            
+            self.source.view.frame = sourceViewTargetFrame
+            self.destination.view.frame = destinationViewTargetFrame
+            
+        }) { (finished) -> Void in
+            self.source.removeFromParent()
+            self.source.present(self.destination, animated: false, completion: nil)
+        }
+    }
+    
 }
 
 //Интерактивное закрытие
