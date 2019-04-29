@@ -8,24 +8,23 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
     var sizeHeightCell = CGFloat()
     var flack = true
     
-    var transportLineColl = Int(0)
+    var transportLine = String()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        navigationItem.title = base[transportLine].favoriteАnime[transportLineColl].name  // Имя поля
+        
+        navigationItem.title = transportLine  // Имя поля
         
         self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
         self.navigationController?.navigationBar.shadowImage = UIImage()
         self.navigationController?.navigationBar.isTranslucent = true
         
-        
-        backgoundImage.image = UIImage(named: base[transportLine].favoriteАnime[transportLineColl].name + ".jpg")
+        backgoundImage.image = UIImage(named: transportLine + ".jpg")
         collectionView.backgroundColor = .clear
         
         sizeWidthCell = self.view.frame.size.width / 3
         sizeHeightCell = self.view.frame.size.height / 4
-        
         
     }
     
@@ -48,7 +47,7 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
         collectionView.dataSource = self
         collectionView.delegate = self
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CustomCollectionViewCell", for: indexPath) as! CustomCollectionViewCell
-       cell.imageAnime.image = UIImage(named: base[transportLine].favoriteАnime[transportLineColl].name + " \(indexPath.row+1).jpg")
+        cell.imageAnime.image = UIImage(named: transportLine + " \(indexPath.row+1).jpg")
         cell.imageAnime.translatesAutoresizingMaskIntoConstraints = false
         
        

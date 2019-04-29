@@ -1,8 +1,10 @@
 import UIKit
 
-class TableViewTwoController: UIViewController, UITableViewDelegate, UITableViewDataSource  {
+class TableViewTwoController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate {
     private var searching = false
-    private var filteredList = [Profile]()
+    private var filteredList = [Friend]()
+    let friendProfile = FriendProfile.instance
+    let mainProfile = MainProfile.instance
 
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var backgroundView: UIImageView!
@@ -10,13 +12,16 @@ class TableViewTwoController: UIViewController, UITableViewDelegate, UITableView
     
     var sectionNumber = 1
     var rowNumber = [(Int, Int)]()
+
     
     override func viewDidLoad() {
         sortedPeople()
         super.viewDidLoad()
-
+        
         backgroundView.image = UIImage(named: "Hp.jpg")
+        
         navigationItem.title = "Friend list"  // Имя поля
+        
         self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
         self.navigationController?.navigationBar.shadowImage = UIImage()
         self.navigationController?.navigationBar.isTranslucent = true // Делаем прозрачным navigationBar
@@ -30,19 +35,22 @@ class TableViewTwoController: UIViewController, UITableViewDelegate, UITableView
     }
     
     //MARK: - Search Bar
-    
-    
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {  //searchBar
         guard searchText != "" else {
             searching = false
             tableView.reloadData()
             return
         }
-        
+
         filteredList.removeAll()
-        for i in 1...base.count {
-            if base[i-1].name.lowercased().prefix(searchText.count) == searchText.lowercased() {
-                filteredList.append(base[i-1])
+        
+        for i in 1...mainProfile.friends.count {
+
+
+
+
+            if mainProfile.friends[i-1].name.lowercased().prefix(searchText.count) == searchText.lowercased() {
+                filteredList.append(mainProfile.friends[i-1])
             }
         }
         if filteredList.count != 0 {
@@ -57,16 +65,27 @@ class TableViewTwoController: UIViewController, UITableViewDelegate, UITableView
     //MARK: - Sorted People
     
     func sortedPeople() {
+        
+        var indx = 0
+        while indx < mainProfile.friends.count-1{
+            if mainProfile.friends[indx].name > mainProfile.friends[indx+1].name {
+                mainProfile.friends.append(mainProfile.friends[indx])
+                mainProfile.friends.remove(at: indx)
+            } else {
+                indx+=1
+            }
+        }
+        
         var coint = 1
-        for i in 1...base.count-1 {
-            if base[i-1].name.first != base[i].name.first {
+        for i in 1...mainProfile.friends.count-1 {
+            if mainProfile.friends[i-1].name.first != mainProfile.friends[i].name.first {
                 sectionNumber+=1
                 rowNumber.append((sectionNumber-2, coint))
                 coint = 1
             } else {
                 coint+=1
             }
-            if i == base.count-1 && base[i].name.first != base[i-1].name.first{
+            if i == mainProfile.friends.count-1 && mainProfile.friends[i].name.first != mainProfile.friends[i-1].name.first {
                 rowNumber.append((sectionNumber-1, coint))
             }
         }
@@ -77,7 +96,7 @@ class TableViewTwoController: UIViewController, UITableViewDelegate, UITableView
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {     // Создание section решеток
         let button = UIButton(type: .system)
         if searching {
-            
+
             button.setTitle("Search resault", for: .normal)
             button.contentHorizontalAlignment = .center
             button.backgroundColor = #colorLiteral(red: 0.1247105226, green: 0.1294333935, blue: 0.1380615532, alpha: 1)
@@ -90,7 +109,8 @@ class TableViewTwoController: UIViewController, UITableViewDelegate, UITableView
                     idx += rowNumber[i-1].1
                 }
             }
-            button.setTitle(String(base[idx].name.first!), for: .normal)
+        
+            button.setTitle(String(mainProfile.friends[idx].name.first!), for: .normal)
             button.contentHorizontalAlignment = .left
             button.contentEdgeInsets = UIEdgeInsets(top: 0,left: 85,bottom: 0,right: 0)
             button.backgroundColor = #colorLiteral(red: 0.1247105226, green: 0.1294333935, blue: 0.1380615532, alpha: 1)
@@ -132,12 +152,15 @@ class TableViewTwoController: UIViewController, UITableViewDelegate, UITableView
         }
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "Cell") else { return UITableViewCell() }
         cell.backgroundColor = #colorLiteral(red: 0.6000000238, green: 0.6000000238, blue: 0.6000000238, alpha: 1)
+        
         if searching {
             cell.textLabel?.text = filteredList[indexPath.row].name
-            cell.imageView?.image = UIImage(named: filteredList[indexPath.row].avatar + ".jpg") // Добавляем аватарку
+
+            cell.imageView?.image = filteredList[indexPath.row].avatar // Добавляем аватарку
         } else {
-            cell.textLabel?.text = base[idx+indexPath.row].name
-            cell.imageView?.image = UIImage(named: base[idx+indexPath.row].avatar + ".jpg") // Добавляем аватарку
+        
+            cell.textLabel?.text = mainProfile.friends[idx+indexPath.row].name
+            cell.imageView?.image = mainProfile.friends[idx+indexPath.row].avatar // Добавляем аватарку
             cell.imageView?.layer.cornerRadius = 25.0                                    // Делаем её круглой
             cell.imageView?.layer.masksToBounds = true
         }
@@ -156,10 +179,31 @@ class TableViewTwoController: UIViewController, UITableViewDelegate, UITableView
             }
         }
         let detailVC = self.storyboard?.instantiateViewController(withIdentifier: "TabTwoTableController") as! TabTwoTableController
+
         if searching {
-            detailVC.transportLine = filteredList[indexPath.row].id
+
+            for i in 1...base.count-1 {
+                if base[i-1].name == filteredList[indexPath.row].name {
+                    friendProfile.avatar = base[i-1].avatar
+                    friendProfile.birthday = base[i-1].birthday
+                    friendProfile.favoriteАnime = base[i-1].favoriteАnime
+                    friendProfile.friends = base[i-1].friends
+                    friendProfile.name = base[i-1].name
+                }
+            }
+
         } else {
-            detailVC.transportLine = base[idx+indexPath.row].id
+
+            for i in 1...base.count {
+                if base[i-1].name == mainProfile.friends[idx+indexPath.row].name {
+                    friendProfile.avatar = base[i-1].avatar
+                    friendProfile.birthday = base[i-1].birthday
+                    friendProfile.favoriteАnime = base[i-1].favoriteАnime
+                    friendProfile.friends = base[i-1].friends
+                    friendProfile.name = base[i-1].name
+                }
+            }
+
         }
         detailVC.transitioningDelegate = self
         present(detailVC, animated: true)

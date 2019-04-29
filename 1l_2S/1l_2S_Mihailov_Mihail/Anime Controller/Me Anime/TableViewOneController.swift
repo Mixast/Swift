@@ -1,10 +1,13 @@
 import UIKit
 import WebKit
+import KeychainSwift
 
 class TableViewOneController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var hop = 10
     let interactive = CustomInteractiveTransition()
+    let mainProfile = MainProfile.instance
+    
     
     @IBOutlet weak var tableView: UITableView!
     
@@ -15,10 +18,15 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
             DispatchQueue.main.async {
             }
         }
-        
+ 
         navigationItem.title = "Favorite anime"  // Имя поля
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Add anime", style: .plain, target: self, action: #selector(handleShowIndexPath))
  
+        let doneItem = UIBarButtonItem(title: "Log out", style: .done, target: self, action: #selector(exitLogin))
+        doneItem.tintColor = #colorLiteral(red: 0.9529411793, green: 0.6862745285, blue: 0.1333333403, alpha: 1)
+        navigationItem.leftBarButtonItem = doneItem
+        
+        
         self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
         self.navigationController?.navigationBar.shadowImage = UIImage()
         self.navigationController?.navigationBar.isTranslucent = true // Делаем прозрачным navigationBar
@@ -31,6 +39,22 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
         tableView.register(headerNib, forHeaderFooterViewReuseIdentifier: "TableViewAnimeHeader")
         
     }
+    
+    @objc func exitLogin() {
+        let keychain = KeychainSwift()
+        keychain.delete(Keys.login)
+        keychain.delete(Keys.password)
+        
+        
+        self.tabBarController?.tabBar.isHidden = true
+        self.navigationController?.isNavigationBarHidden = true
+        
+        chek = true // Костыль для перехода в самое начало
+        dismiss(animated: true)
+
+//        self.performSegue(withIdentifier: "goToLogin", sender: self)
+    }
+    
     
 //     MARK: - Добавляем аниме в лист
     @objc func handleShowIndexPath() {
@@ -47,15 +71,16 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
 
                 let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
                 for i in 1...animelist.count { // Создаем кнопки с картинками и названием аниме
-                    let image = UIImage(named: animelist[i-1].name + ".jpg")
-                    let imageTitle = image?.scaled(to: 80)
+                    let image = animelist[i-1].avatar
+                    let imageTitle = image.scaled(to: 80)
 
                     let addAnime = UIAlertAction(title: animelist[i-1].name, style: .default, handler: { (action: UIAlertAction!) -> Void in
-                        base[transportLine].favoriteАnime.append(Аnime())
-                        let indx = base[transportLine].favoriteАnime.endIndex - 1
-                        base[transportLine].favoriteАnime[indx].id = indx
-                        base[transportLine].favoriteАnime[indx].name = animelist[i-1].name
-                        base[transportLine].favoriteАnime[indx].description = animelist[i-1].description
+                        self.mainProfile.favoriteАnime.append(Аnime())
+                        let indx = self.mainProfile.favoriteАnime.endIndex - 1
+                        self.mainProfile.favoriteАnime[indx].id = indx
+                        self.mainProfile.favoriteАnime[indx].name = animelist[i-1].name
+                        self.mainProfile.favoriteАnime[indx].description = animelist[i-1].description
+                        self.mainProfile.favoriteАnime[indx].avatar = animelist[i-1].avatar
                         animelist.remove(at: i-1)
                         self.tableView.reloadData()
                     })
@@ -85,7 +110,7 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
             var count = 0
             var countBase = animelist.count
             for i in 1...countBase {
-                if base[transportLine].favoriteАnime[section].name == animelist[count].name {
+                if self.mainProfile.favoriteАnime[section].name == animelist[count].name {
                     animelist.remove(at: i-1)
                     countBase-=1
                 } else {
@@ -96,21 +121,22 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
         
         let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: "TableViewAnimeHeader") as? TableViewAnimeHeader
         header?.viewAnime.backgroundColor = #colorLiteral(red: 0.1247105226, green: 0.1294333935, blue: 0.1380615532, alpha: 1)
-        header?.animeButton.setTitle(base[transportLine].favoriteАnime[section].name, for: .normal)
+        header?.animeButton.setTitle(self.mainProfile.favoriteАnime[section].name, for: .normal)
         header?.animeButton.backgroundColor = .clear
-        header?.animeButton.addTarget(self, action: #selector(handleExpandClose), for: .touchDownRepeat)
+        header?.animeButton.addTarget(self, action: #selector(handleExpandClose), for: .touchDown)
         header?.animeButton.setTitleColor(#colorLiteral(red: 0.9529411793, green: 0.6862745285, blue: 0.1333333403, alpha: 1), for: .normal)
         header?.animeButton.titleLabel?.lineBreakMode = .byWordWrapping
         header?.animeButton.titleLabel?.numberOfLines = 0
         header?.animeButton.tag = section
-        header?.animeImage.image = UIImage(named: base[transportLine].favoriteАnime[section].name + ".jpg")
+        
+        header?.animeImage.image = self.mainProfile.favoriteАnime[section].avatar
         header?.animeImage.layer.masksToBounds = true
         header?.wowNewAnime.layer.masksToBounds = true
-        header?.animeSeries.text = "S: " + String(base[transportLine].favoriteАnime[section].series)
+        header?.animeSeries.text = "S: " + String(self.mainProfile.favoriteАnime[section].series)
         header?.animeSeries.textColor = #colorLiteral(red: 0.9529411793, green: 0.6862745285, blue: 0.1333333403, alpha: 1)
         for i in 1...animeBase.count {
-            if animeBase[i-1].name == base[transportLine].favoriteАnime[section].name {
-                if animeBase[i-1].series == base[transportLine].favoriteАnime[section].series {
+            if animeBase[i-1].name == self.mainProfile.favoriteАnime[section].name {
+                if animeBase[i-1].series == self.mainProfile.favoriteАnime[section].series {
                     header?.wowNewAnime.image = nil
                 } else {
                     header?.wowNewAnime.image = #imageLiteral(resourceName: "icons8-vnim-50")
@@ -122,11 +148,11 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
     }
 
     @objc func handleExpandClose(button: UIButton) { // Действие при двойном нажатии на секцию
-        if base[transportLine].favoriteАnime[button.tag].flack == true {
-            base[transportLine].favoriteАnime[button.tag].flack = false
+        if self.mainProfile.favoriteАnime[button.tag].flack == true {
+            self.mainProfile.favoriteАnime[button.tag].flack = false
             tableView.reloadData()
         } else {
-            base[transportLine].favoriteАnime[button.tag].flack = true
+            self.mainProfile.favoriteАnime[button.tag].flack = true
             tableView.reloadData()
         }
     }
@@ -134,7 +160,7 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
     // MARK: - numberOfSections
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return base[transportLine].favoriteАnime.count
+        return self.mainProfile.favoriteАnime.count
     }
 
 
@@ -145,7 +171,7 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
     // MARK: - numberOfRowsInSection
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if base[transportLine].favoriteАnime[section].flack  == true {
+        if self.mainProfile.favoriteАnime[section].flack  == true {
             return 1
         } else {
             return 0
@@ -159,9 +185,9 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "CamtomAnimeTableViewCell") as? CamtomAnimeTableViewCell else { return UITableViewCell() }
         cell.backgroundColor = #colorLiteral(red: 0.6000000238, green: 0.6000000238, blue: 0.6000000238, alpha: 1)
-        cell.animeSeries.text = "S: " + String(base[transportLine].favoriteАnime[indexPath.section].series)
+        cell.animeSeries.text = "S: " + String(self.mainProfile.favoriteАnime[indexPath.section].series)
         cell.animeStepp.row = indexPath.section
-        cell.animeStepp.value = Double(base[transportLine].favoriteАnime[indexPath.section].series)
+        cell.animeStepp.value = Double(self.mainProfile.favoriteАnime[indexPath.section].series)
         cell.videoPlayerButton.tag = indexPath.section
         
         
@@ -171,8 +197,8 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
             cell.videoPlayerButton.isUserInteractionEnabled = false
             cell.loadingVideo.flack = false
             for i in 1...animeBase.count {
-                if animeBase[i-1].name == base[transportLine].favoriteАnime[indexPath.section].name {
-                    if let url = NSURL(string: "https://video.sibnet.ru/shell.php?videoid=" + animeBase[i-1].seriesURL[base[transportLine].favoriteАnime[indexPath.section].series-1])
+                if animeBase[i-1].name == self.mainProfile.favoriteАnime[indexPath.section].name {
+                    if let url = NSURL(string: "https://video.sibnet.ru/shell.php?videoid=" + animeBase[i-1].seriesURL[self.mainProfile.favoriteАnime[indexPath.section].series-1])
                     {
                         let requstObj = URLRequest(url: url as URL)
                         cell.videoPlayer.isHidden = false
@@ -191,7 +217,7 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
             cell.videoPlayer.backgroundColor = UIColor.clear
             cell.videoPlayerButton.setImage(#imageLiteral(resourceName: "icons8-play-100"), for: .normal)
             cell.videoPlayerButton.isUserInteractionEnabled = true
-            cell.videoPlayerImage?.image = UIImage(named: base[transportLine].favoriteАnime[indexPath.section].name + ".jpg")
+            cell.videoPlayerImage?.image = UIImage(named: self.mainProfile.favoriteАnime[indexPath.section].name + ".jpg")
             
         }
         return cell
@@ -202,16 +228,16 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
     // Добавляем описание аниме внизу
     
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
-        let heightView = (CGFloat(Double(base[transportLine].favoriteАnime[section].description.count)*7.32)/(tableView.frame.size.width))
+        let heightView = (CGFloat(Double(self.mainProfile.favoriteАnime[section].description.count)*7.32)/(tableView.frame.size.width))
         let view = UIView(frame: CGRect(x: 0, y: 0, width: tableView.frame.size.width, height: (heightView+1)*22))
-        if base[transportLine].favoriteАnime[section].flack  == true {
+        if self.mainProfile.favoriteАnime[section].flack  == true {
             let label = UILabel(frame: CGRect(x: 10, y: 10, width: tableView.frame.size.width-10, height: 20))
             label.font = UIFont.systemFont(ofSize: 18)
             label.text = "Описание"
             label.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
             let label2 = UILabel(frame: CGRect(x: 10, y: 30, width: tableView.frame.size.width-10, height: heightView*20))
             label2.font = UIFont.systemFont(ofSize: 14)
-            label2.text = String(base[transportLine].favoriteАnime[section].description)
+            label2.text = String(self.mainProfile.favoriteАnime[section].description)
             label2.lineBreakMode = .byWordWrapping
             label2.numberOfLines = 0
             label2.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
@@ -226,8 +252,8 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
     }
 
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        if base[transportLine].favoriteАnime[section].flack  == true {
-            var heightView = (CGFloat(Double(base[transportLine].favoriteАnime[section].description.count)*7.32)/(tableView.frame.size.width))+2
+        if self.mainProfile.favoriteАnime[section].flack  == true {
+            var heightView = (CGFloat(Double(self.mainProfile.favoriteАnime[section].description.count)*7.32)/(tableView.frame.size.width))+2
             heightView.round(.awayFromZero)
             heightView*=22
             return heightView
@@ -241,7 +267,8 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let detailVC = self.storyboard?.instantiateViewController(withIdentifier: "TabOneCollectionViewController") as! TabOneCollectionViewController
-        detailVC.transportLineColl = indexPath.section
+        detailVC.transportLine = mainProfile.favoriteАnime[indexPath.section].name
+        
         interactive.viewController = detailVC
         
         navigationController?.delegate = self
@@ -258,9 +285,9 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
                 animelist.append(Аnime())
                 let indx = animelist.endIndex - 1
                 animelist[indx].id = indx
-                animelist[indx].name = base[transportLine].favoriteАnime[indexPath.section].name
-                animelist[indx].description = base[transportLine].favoriteАnime[indexPath.section].description
-                base[transportLine].favoriteАnime.remove(at: indexPath.section)
+                animelist[indx].name = self.mainProfile.favoriteАnime[indexPath.section].name
+                animelist[indx].description = self.mainProfile.favoriteАnime[indexPath.section].description
+                self.mainProfile.favoriteАnime.remove(at: indexPath.section)
 
                 tableView.reloadData()
         }
@@ -272,20 +299,20 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
     
     // MARK: - Actions
     @IBAction func animeStepper(_ sender: HSUnderLineStepper) {
-        if sender.value > Double(base[transportLine].favoriteАnime[sender.row!].series) {
-        sender.value = Double(base[transportLine].favoriteАnime[sender.row!].series) + 1
+        if sender.value > Double(self.mainProfile.favoriteАnime[sender.row!].series) {
+        sender.value = Double(self.mainProfile.favoriteАnime[sender.row!].series) + 1
             var pop = 0
             for _ in 1...animeBase.count {
-                if animeBase[pop].name == base[transportLine].favoriteАnime[sender.row!].name {
-                    if base[transportLine].favoriteАnime[sender.row!].series < animeBase[pop].series {
-                        base[transportLine].favoriteАnime[sender.row!].series = Int(sender.value)
+                if animeBase[pop].name == self.mainProfile.favoriteАnime[sender.row!].name {
+                    if self.mainProfile.favoriteАnime[sender.row!].series < animeBase[pop].series {
+                        self.mainProfile.favoriteАnime[sender.row!].series = Int(sender.value)
                     }
                 }
                 pop+=1
             }
         } else {
-            sender.value = Double(base[transportLine].favoriteАnime[sender.row!].series) - 1
-            base[transportLine].favoriteАnime[sender.row!].series = Int(sender.value)
+            sender.value = Double(self.mainProfile.favoriteАnime[sender.row!].series) - 1
+            self.mainProfile.favoriteАnime[sender.row!].series = Int(sender.value)
         }
         tableView.reloadData()
     }

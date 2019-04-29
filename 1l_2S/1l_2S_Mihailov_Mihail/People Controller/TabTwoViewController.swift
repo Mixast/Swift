@@ -5,16 +5,16 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
     @IBOutlet weak var image: UIImageView!
     @IBOutlet weak var tableView: UITableView!
     
-    
-    var transportLine = Int(0)
+    let friendProfile = FriendProfile.instance
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        if base[transportLine].favoriteАnime.count == 0 {
+        if friendProfile.favoriteАnime.count == 0 {
         image.image = UIImage(named:  "Hp.jpg")
         } else {
-        image.image = UIImage(named:  base[transportLine].favoriteАnime[0].name +  ".jpg")
+        image.image = UIImage(named:  friendProfile.favoriteАnime[0].name +  ".jpg")
         }
         tableView.backgroundColor = .clear
         tableView.tableFooterView = UIView() //Убираем пустые строки
@@ -102,7 +102,7 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
         case 1:
             return 1
         case 2:
-            return base[transportLine].favoriteАnime.count
+            return friendProfile.favoriteАnime.count
         default:
             return 0
         }
@@ -138,13 +138,13 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "IntoTabTwoTableViewCell") as? IntoTabTwoTableViewCell  else { return UITableViewCell() }
         switch indexPath.section {
         case 0:
-            cell.infoText.text = base[transportLine].name
-            cell.createIconAvatar(image: base[transportLine].avatar + ".jpg")
+            cell.infoText.text = friendProfile.name
+            cell.createIconAvatar(image: friendProfile.avatar + ".jpg")
             self.view.viewWithTag(90)
         case 1:
-            cell.textLabel?.text = base[transportLine].birthday
+            cell.textLabel?.text = friendProfile.birthday
         case 2:
-            cell.textLabel?.text = base[transportLine].favoriteАnime[indexPath.row].name + "\n" + "Просмотрено серий: \(base[transportLine].favoriteАnime[indexPath.row].series)"
+            cell.textLabel?.text = friendProfile.favoriteАnime[indexPath.row].name + "\n" + "Просмотрено серий: \(friendProfile.favoriteАnime[indexPath.row].series)"
             cell.textLabel?.lineBreakMode = .byWordWrapping
             cell.textLabel?.numberOfLines = 0
             cell.textLabel?.contentMode = .center

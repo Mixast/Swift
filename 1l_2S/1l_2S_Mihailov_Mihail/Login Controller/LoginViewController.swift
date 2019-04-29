@@ -1,6 +1,11 @@
 import UIKit
+import KeychainSwift
+import RNCryptor
+
 
 class LoginViewController: UIViewController {
+    let keychain = KeychainSwift()
+    let mainProfile = MainProfile.instance
 // MARK: - Connect IBOutlet
     @IBOutlet weak var substrate: UILabel!
     @IBOutlet weak var loginTextField: UITextField!
@@ -9,8 +14,10 @@ class LoginViewController: UIViewController {
 // MARK: - Connect IBAction
     @IBAction func buttonAction(_ sender: Any) {
         // Запускаем процесс составления базы (это кастыль решил так реализовать). И когда база составлена ищу в ней связку login/password
+        
         fillingBase {
             DispatchQueue.main.async {
+                
                 var flack = false
                 for i in 1...base.count {
                     
@@ -23,10 +30,23 @@ class LoginViewController: UIViewController {
                         self.showAlert(massage: "Поле Password пустое", title: "Error")
                         return
                     }
-                    
+    
                     if base[i-1].login == self.loginTextField.text {
                         if base[i-1].password == self.passwordTextField.text {
-                            transportLine = base[i-1].id
+                    
+                            self.mainProfile.name = base[i-1].name
+                            self.mainProfile.birthday = base[i-1].birthday
+                            self.mainProfile.avatar = base[i-1].avatar
+                            self.mainProfile.favoriteАnime = base[i-1].favoriteАnime
+                            self.mainProfile.friends = base[i-1].friends
+                            
+                            let keychainLogin = encryptMessage(message: login, encryptionKey: "hooP")
+                            let keychainPasword = encryptMessage(message: password, encryptionKey: "hooP")
+                            self.keychain.set(keychainLogin, forKey: Keys.login)
+                            self.keychain.set(keychainPasword, forKey: Keys.password)
+                            self.view.endEditing(true)
+                            
+                            
                             self.performSegue(withIdentifier: "goToInfo", sender: self)
                             flack = true
                         }
@@ -62,15 +82,42 @@ class LoginViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.title = "Login Field"  // Имя поля
         designFor(label: substrate)  // Кастомизация подложки substrate
         designFor(button: button)    // Костомизация кнопри Connect
         
-        self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
-        self.navigationController?.navigationBar.shadowImage = UIImage()
-        self.navigationController?.navigationBar.isTranslucent = true // Делаем прозрачным navigationBar
-        
     }
+    
+    override func loadView() {
+        super.loadView()
+        
+        if self.keychain.get(Keys.login) != nil && self.keychain.get(Keys.password) != nil {
+
+        fillingBase {
+            DispatchQueue.main.async {
+                for i in 1...base.count {
+
+                    let login = decryptMessage(encryptedMessage: self.keychain.get(Keys.login)!, encryptionKey: "hooP")
+                    let password = decryptMessage(encryptedMessage: self.keychain.get(Keys.password)!, encryptionKey: "hooP")
+
+                    if login == base[i-1].login {
+                        if password == base[i-1].password {
+                            self.mainProfile.name = base[i-1].name
+                            self.mainProfile.birthday = base[i-1].birthday
+                            self.mainProfile.avatar = base[i-1].avatar
+                            self.mainProfile.favoriteАnime = base[i-1].favoriteАnime
+                            self.mainProfile.friends = base[i-1].friends
+                            
+                            
+                            self.performSegue(withIdentifier: "goToStart", sender: self)
+
+                        }
+                    }
+                }
+            }
+        }
+    }
+    }
+    
     
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
