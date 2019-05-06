@@ -9,11 +9,9 @@ class TableViewTwoController: UIViewController, UITableViewDelegate, UITableView
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var backgroundView: UIImageView!
     
-    
     var sectionNumber = 1
     var rowNumber = [(Int, Int)]()
 
-    
     override func viewDidLoad() {
         sortedPeople()
         super.viewDidLoad()
@@ -30,8 +28,7 @@ class TableViewTwoController: UIViewController, UITableViewDelegate, UITableView
         tableView.tableFooterView = UIView() //Убираем пустые строки
         
         self.tableView.tableFooterView = UIView() //Убираем пустые строки
-        
-        
+             
     }
     
     //MARK: - Search Bar
@@ -45,9 +42,6 @@ class TableViewTwoController: UIViewController, UITableViewDelegate, UITableView
         filteredList.removeAll()
         
         for i in 1...mainProfile.friends.count {
-
-
-
 
             if mainProfile.friends[i-1].name.lowercased().prefix(searchText.count) == searchText.lowercased() {
                 filteredList.append(mainProfile.friends[i-1])
@@ -156,11 +150,18 @@ class TableViewTwoController: UIViewController, UITableViewDelegate, UITableView
         if searching {
             cell.textLabel?.text = filteredList[indexPath.row].name
 
-            cell.imageView?.image = filteredList[indexPath.row].avatar // Добавляем аватарку
+            cell.imageView?.image = filteredList[indexPath.row].avatar  // Добавляем аватарку
         } else {
         
             cell.textLabel?.text = mainProfile.friends[idx+indexPath.row].name
-            cell.imageView?.image = mainProfile.friends[idx+indexPath.row].avatar // Добавляем аватарку
+            
+            let imageURL = NSURL(string: self.mainProfile.friends[idx+indexPath.row].avatarName)
+
+            if let data = try? Data(contentsOf: imageURL! as URL) {
+                self.mainProfile.friends[idx+indexPath.row].avatar = UIImage(data: data)!
+            }
+
+            cell.imageView?.image =  mainProfile.friends[idx+indexPath.row].avatar      // Добавляем аватарку
             cell.imageView?.layer.cornerRadius = 25.0                                    // Делаем её круглой
             cell.imageView?.layer.masksToBounds = true
         }
@@ -178,38 +179,34 @@ class TableViewTwoController: UIViewController, UITableViewDelegate, UITableView
                 idx += rowNumber[i-1].1
             }
         }
-        let detailVC = self.storyboard?.instantiateViewController(withIdentifier: "TabTwoTableController") as! TabTwoTableController
 
         if searching {
 
-            for i in 1...base.count-1 {
-                if base[i-1].name == filteredList[indexPath.row].name {
-                    friendProfile.avatar = base[i-1].avatar
-                    friendProfile.birthday = base[i-1].birthday
-                    friendProfile.favoriteАnime = base[i-1].favoriteАnime
-                    friendProfile.friends = base[i-1].friends
-                    friendProfile.name = base[i-1].name
+            for i in 1...mainProfile.friends.count {
+                if mainProfile.friends[i-1].name == filteredList[indexPath.row].name {
+                    friendProfile.avatarName = filteredList[indexPath.row].avatarName
+                    friendProfile.id = filteredList[indexPath.row].id
+                    friendProfile.avatar = filteredList[indexPath.row].avatar
+                    friendProfile.name = filteredList[indexPath.row].name
+                    
+                    let detailVC = self.storyboard?.instantiateViewController(withIdentifier: "TabTwoTableController") as! TabTwoTableController
+                    detailVC.transitioningDelegate = self
+                    self.present(detailVC, animated: true)
+
                 }
             }
-
+            
         } else {
-
-            for i in 1...base.count {
-                if base[i-1].name == mainProfile.friends[idx+indexPath.row].name {
-                    friendProfile.avatar = base[i-1].avatar
-                    friendProfile.birthday = base[i-1].birthday
-                    friendProfile.favoriteАnime = base[i-1].favoriteАnime
-                    friendProfile.friends = base[i-1].friends
-                    friendProfile.name = base[i-1].name
-                }
-            }
-
+                    friendProfile.avatarName = mainProfile.friends[idx+indexPath.row].avatarName
+                    friendProfile.id = mainProfile.friends[idx+indexPath.row].id
+                    friendProfile.avatar = mainProfile.friends[idx+indexPath.row].avatar
+                    friendProfile.name = mainProfile.friends[idx+indexPath.row].name
+            
+                            let detailVC = self.storyboard?.instantiateViewController(withIdentifier: "TabTwoTableController") as! TabTwoTableController
+                            detailVC.transitioningDelegate = self
+                            self.present(detailVC, animated: true)
         }
-        detailVC.transitioningDelegate = self
-        present(detailVC, animated: true)
-        
     }
-   
     
 }
 

@@ -1,4 +1,6 @@
 import UIKit
+import Alamofire
+import SwiftyJSON
 
 class TabOneCollectionViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     @IBOutlet weak var backgoundImage: UIImageView!
@@ -8,33 +10,49 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
     var sizeHeightCell = CGFloat()
     var flack = true
     
-    var transportLine = String()
+    let mainProfile = MainProfile.instance
+    
+    var transportLine = Int()
+    
+    var colectionImage = [UIImage]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
-        navigationItem.title = transportLine  // Имя поля
-        
+        navigationItem.title = mainProfile.favoriteАnime[transportLine].name  // Имя поля
+        self.backgoundImage.image = mainProfile.favoriteАnime[transportLine].avatarImage
+
         self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
         self.navigationController?.navigationBar.shadowImage = UIImage()
         self.navigationController?.navigationBar.isTranslucent = true
         
-        backgoundImage.image = UIImage(named: transportLine + ".jpg")
         collectionView.backgroundColor = .clear
         
         sizeWidthCell = self.view.frame.size.width / 3
         sizeHeightCell = self.view.frame.size.height / 4
-        
-    }
     
+//     MARK: - Параллельно прогружаем скриншоты
+        
+        for i in 1...mainProfile.favoriteАnime[transportLine].colectionImage.count {
+            let imageURL = NSURL(string: "https://shikimori.org" + mainProfile.favoriteАnime[transportLine].colectionImage[i-1])
+            let queue = DispatchQueue.global(qos: .utility)
+            queue.async{
+                if let data = try? Data(contentsOf: imageURL! as URL){
+                    DispatchQueue.main.async {
+                        self.mainProfile.favoriteАnime[self.transportLine].colectionImG[i-1] = UIImage(data: data)!
 
-    func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return 3
+                            let indexPath = IndexPath(row: i-1, section: 0)
+                            self.collectionView.reloadItems(at: [indexPath])
+
+                    }
+                }
+            }
+        }
+        
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 3
+        return mainProfile.favoriteАnime[transportLine].colectionImage.count
     }
     
     func collectionView(_ collectionView: UICollectionView,
@@ -47,10 +65,9 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
         collectionView.dataSource = self
         collectionView.delegate = self
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CustomCollectionViewCell", for: indexPath) as! CustomCollectionViewCell
-        cell.imageAnime.image = UIImage(named: transportLine + " \(indexPath.row+1).jpg")
+  
+        cell.imageAnime.image = mainProfile.favoriteАnime[transportLine].colectionImG[indexPath.row]
         cell.imageAnime.translatesAutoresizingMaskIntoConstraints = false
-        
-       
         
         let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(imageTapped(tapGestureRecognizer:)))
         cell.imageAnime.isUserInteractionEnabled = true
@@ -59,7 +76,7 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
         return cell
     }
     
-    // MARK: -  Анимация увеличения машинки
+// MARK: -  Анимация увеличения картинки
     
     @objc func imageTapped(tapGestureRecognizer: UITapGestureRecognizer)
     {
@@ -70,8 +87,6 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
             let originY = self.view.viewWithTag((indexPath.section*100)+indexPath.row+1)!.frame.origin.y
             let originSizeWidth = self.view.viewWithTag((indexPath.section*100)+indexPath.row+1)!.frame.size.width
             let originSizeHeight = self.view.viewWithTag((indexPath.section*100)+indexPath.row+1)!.frame.size.height
-
-
 
             UIView.animateKeyframes(withDuration: 1, delay: 0, options: [], animations: {
                 UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 0.5, animations: {

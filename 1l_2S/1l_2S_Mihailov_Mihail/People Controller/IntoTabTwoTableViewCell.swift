@@ -18,7 +18,7 @@ class IntoTabTwoTableViewCell: UITableViewCell {
     }
 
     
-    func createIconAvatar(image name: String) {  // Создание иконок
+    func createIconAvatar(image name: UIImage) {  // Создание иконок
         
         let imageContainer = UIView(frame: CGRect(x: 10, y: 15, width: imageSize.width, height: imageSize.height))
         
@@ -38,7 +38,7 @@ class IntoTabTwoTableViewCell: UITableViewCell {
         imageView.layer.cornerRadius = cornerRadius
         imageView.layer.borderColor = UIColor.black.cgColor
         imageView.layer.borderWidth = 1.0
-        imageView.image = UIImage(named: name)
+        imageView.image = name
         imageView.tag = 100
         self.addSubview(imageContainer)
         imageContainer.addSubview(imageView)

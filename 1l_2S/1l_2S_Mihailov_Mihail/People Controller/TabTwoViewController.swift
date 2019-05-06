@@ -1,4 +1,6 @@
 import UIKit
+import Alamofire
+import SwiftyJSON
 
 class TabTwoTableController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
@@ -7,14 +9,17 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
     
     let friendProfile = FriendProfile.instance
 
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         if friendProfile.favoriteАnime.count == 0 {
         image.image = UIImage(named:  "Hp.jpg")
         } else {
-        image.image = UIImage(named:  friendProfile.favoriteАnime[0].name +  ".jpg")
+            let imageURL = NSURL(string: "https://shikimori.org" + friendProfile.favoriteАnime[0].avatar)
+            if let data = try? Data(contentsOf: imageURL! as URL) {
+            image.image = UIImage(data: data)!
+            }
+
         }
         tableView.backgroundColor = .clear
         tableView.tableFooterView = UIView() //Убираем пустые строки
@@ -25,7 +30,84 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
         swipeRight.direction = UISwipeGestureRecognizer.Direction.right
         self.view.addGestureRecognizer(swipeRight)  //Ловим свайп
         
+        self.loadFriendProfile(id: friendProfile.id) {
+            DispatchQueue.main.async {
+                self.tableView.reloadSections([1], with: .none)
+                self.loadFriendAnime(id: self.friendProfile.id) {
+                    DispatchQueue.main.async {
+                        self.reload(tableView: self.tableView)
+                        self.tableView.reloadSections([0], with: .none)
+                    }
+                }
+            }
+        }
+        
     }
+//     MARK: - Reload data
+    func reload(tableView: UITableView) {
+    
+        let contentOffset = tableView.contentOffset
+        tableView.reloadData()
+        tableView.layoutIfNeeded()
+        tableView.setContentOffset(contentOffset, animated: false)
+    
+    }
+    
+//     MARK: - Прогружаем скриншоты возраст друга
+    private func loadFriendProfile(id: Int, completioHandler : (() ->Void)?) {
+        request("https://shikimori.org/api/users/\(id)",  method: .get).validate(contentType: ["application/json"]).responseJSON() { response in
+            
+            switch response.result {
+            case .success(let value):
+                let json = JSON(value)
+            
+                self.friendProfile.birthday = json["full_years"].stringValue + " years old"
+
+            case .failure(let error):
+                let arres = error.localizedDescription
+                self.showAlert(massage: arres, title: "Error loading Profile Friend")
+            }
+            completioHandler?()
+        }
+    }
+
+//     MARK: - Прогружаем список аниме друга
+    private func loadFriendAnime(id: Int, completioHandler : (() ->Void)?) {
+        request("https://shikimori.org/api/users/\(id)/anime_rates?&limit=60",  method: .get).validate(contentType: ["application/json"]).responseJSON() { response in
+            
+            switch response.result {
+            case .success(let value):
+                let json = JSON(value)
+                self.friendProfile.favoriteАnime.removeAll()
+                var i = 0
+                for (_, subJson):(String, JSON) in json[] {
+                    
+                    self.friendProfile.favoriteАnime.append(АnimeFriend())
+                    self.friendProfile.favoriteАnime[i].id = subJson["anime"]["id"].intValue
+                    self.friendProfile.favoriteАnime[i].name = subJson["anime"]["name"].stringValue + " ( \(subJson["anime"]["russian"].stringValue)) "
+                    self.friendProfile.favoriteАnime[i].series = subJson["anime"]["episodes"].intValue
+                    
+                    if i == 0 {
+                        self.friendProfile.favoriteАnime[i].avatar = subJson["anime"]["image"]["original"].stringValue
+                    }
+                    
+                    i+=1
+                }
+            case .failure(let error):
+                let arres = error.localizedDescription
+                self.showAlert(massage: arres, title: "Error loading Profile Friend Anime list")
+            }
+            completioHandler?()
+        }
+    }
+    
+    func showAlert (massage: String, title: String) {    // Вывод ошибки если пользователь ввел неправильно данные
+        let alert = UIAlertController(title: title, message: massage, preferredStyle: .alert)
+        let action = UIAlertAction(title: "Ok", style: .default, handler: nil)
+        alert.addAction(action)
+        present(alert, animated: true, completion: nil)
+    }
+    
     
     func setNavigationBar() {
         let navBar = UINavigationBar(frame: CGRect(x: 0, y: 20, width: self.view.frame.size.width, height: 50))
@@ -139,15 +221,25 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
         switch indexPath.section {
         case 0:
             cell.infoText.text = friendProfile.name
-            cell.createIconAvatar(image: friendProfile.avatar + ".jpg")
+            cell.createIconAvatar(image: friendProfile.avatar)
+            cell.textLabel?.text = ""
             self.view.viewWithTag(90)
         case 1:
             cell.textLabel?.text = friendProfile.birthday
-        case 2:
+        case 2: 
+            cell.infoText.text = ""
             cell.textLabel?.text = friendProfile.favoriteАnime[indexPath.row].name + "\n" + "Просмотрено серий: \(friendProfile.favoriteАnime[indexPath.row].series)"
             cell.textLabel?.lineBreakMode = .byWordWrapping
             cell.textLabel?.numberOfLines = 0
             cell.textLabel?.contentMode = .center
+            guard let viewWithTag = self.view.viewWithTag(100)  else {
+                break
+            }
+            guard let viewWithTag2 = self.view.viewWithTag(90)  else {
+                break
+            }
+            viewWithTag2.removeFromSuperview()
+            viewWithTag.removeFromSuperview()
         default:
             break
         }
