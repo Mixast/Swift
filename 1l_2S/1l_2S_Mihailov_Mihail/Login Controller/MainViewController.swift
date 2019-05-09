@@ -25,15 +25,11 @@ class MainViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-
-  
-        
-        
         
         let swipe = UIPanGestureRecognizer(target: self, action: #selector(pan))
         self.view.addGestureRecognizer(swipe) //Ловим свайп
         
-        messgeField.text = "Приветствую " + self.mainProfile.name + ", давненько мы не виделись." + "\n" + "Ваше любимое анимэ " + self.mainProfile.favoriteАnime[0].name + " ждет))" + "\n" + "По свайпу вправа вы вернетесь на поле логина. <<-" + "\n" + "Для продолжения доведите машинку до правога края. Удачи) ->>"
+        messgeField.text = "Приветствую " + self.mainProfile.name + ", давненько мы не виделись." + "\n" + "Ваше любимое анимэ " + self.mainProfile.favoriteАnime[0].name + " ждет))" + "\n" + "Для продолжения доведите машинку до правога края. Удачи) ->>"
         
     }
     
@@ -60,15 +56,15 @@ class MainViewController: UIViewController {
         case .ended:
             animator?.stopAnimation(true)
             if self.carImage.frame.origin.x >= self.view.frame.maxX - (self.carImage.frame.size.width + 150) {
-                self.tabBarController?.tabBar.isHidden = false
-                DispatchQueue.main.async(){
+                
+                
                     let newViewController = self.storyboard?.instantiateViewController(withIdentifier: "LoginViewController") as! LoginViewController
                     
                     let customViewControllersArray : NSArray = [newViewController]
                     self.navigationController?.viewControllers = customViewControllersArray as! [UIViewController]
                     
                     self.performSegue(withIdentifier: "goToStartTwo", sender: self)
-                }
+                
             }
     
         default: return

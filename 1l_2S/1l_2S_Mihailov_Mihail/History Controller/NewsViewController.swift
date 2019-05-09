@@ -57,14 +57,14 @@ class NewsViewController: UIViewController, UITableViewDelegate,  UITableViewDat
         header?.historyButton.titleLabel?.lineBreakMode = .byWordWrapping
         header?.historyButton.titleLabel?.numberOfLines = 0
         header?.historyButton.tag = section
-        header?.historyButton.addTarget(self, action: #selector(handleExpandClose), for: .touchDown)
+        header?.historyButton.addTarget(self, action: #selector(handleExpandClose), for: .touchUpInside)
         header?.historyButton.setTitleColor(#colorLiteral(red: 0.9529411793, green: 0.6862745285, blue: 0.1333333403, alpha: 1), for: .normal)
 
         header?.likeLabel.font = UIFont.systemFont(ofSize: 14)
         header?.likeLabel.text = String(likeBase[section].likeMetr)
         header?.likeLabel.textColor = #colorLiteral(red: 0.9529411793, green: 0.6862745285, blue: 0.1333333403, alpha: 1)
 
-        header?.likeButton.addTarget(self, action: #selector(handleExpandLike), for: .touchDown)
+        header?.likeButton.addTarget(self, action: #selector(handleExpandLike), for: .touchUpInside)
         header?.likeButton.tag = section
 
         if likeBase[section].likeStatus == true {
