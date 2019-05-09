@@ -36,7 +36,6 @@ class MainViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         if chek { // Костыль для перехода в самое начало
             dismiss(animated: true)
-            chek = false
         }
     }
     

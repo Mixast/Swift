@@ -28,7 +28,21 @@ class TableViewTwoController: UIViewController, UITableViewDelegate, UITableView
         tableView.tableFooterView = UIView() //Убираем пустые строки
         
         self.tableView.tableFooterView = UIView() //Убираем пустые строки
-             
+        
+//             MARK: - Параллельно прогружаем картинки аниме
+        let queue = DispatchQueue.global(qos: .utility)
+        queue.async{
+            DispatchQueue.main.async {
+                for i in 1...self.mainProfile.friends.count {
+                    let imageURL = NSURL(string: self.mainProfile.friends[i-1].avatarName)
+                    if let data = try? Data(contentsOf: imageURL! as URL){
+                        self.mainProfile.friends[i-1].avatar = UIImage(data: data)!
+                    }
+                }
+                self.tableView.reloadData()
+            }
+        }
+
     }
     
     //MARK: - Search Bar
@@ -47,6 +61,7 @@ class TableViewTwoController: UIViewController, UITableViewDelegate, UITableView
                 filteredList.append(mainProfile.friends[i-1])
             }
         }
+        tableView.reloadData()
         if filteredList.count != 0 {
             searching = true }
         tableView.reloadData()
@@ -149,18 +164,9 @@ class TableViewTwoController: UIViewController, UITableViewDelegate, UITableView
         
         if searching {
             cell.textLabel?.text = filteredList[indexPath.row].name
-
             cell.imageView?.image = filteredList[indexPath.row].avatar  // Добавляем аватарку
         } else {
-        
             cell.textLabel?.text = mainProfile.friends[idx+indexPath.row].name
-            
-            let imageURL = NSURL(string: self.mainProfile.friends[idx+indexPath.row].avatarName)
-
-            if let data = try? Data(contentsOf: imageURL! as URL) {
-                self.mainProfile.friends[idx+indexPath.row].avatar = UIImage(data: data)!
-            }
-
             cell.imageView?.image =  mainProfile.friends[idx+indexPath.row].avatar      // Добавляем аватарку
             cell.imageView?.layer.cornerRadius = 25.0                                    // Делаем её круглой
             cell.imageView?.layer.masksToBounds = true
