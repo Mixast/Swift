@@ -11,65 +11,10 @@ class LoginViewController: UIViewController, WKNavigationDelegate {
     let keychain = KeychainSwift()
     let mainProfile = MainProfile.instance
     
-    var authorizationCode = String()
-    var access_token = String()
-    var refresh_token = String()
-    var userID = String()
-    
 // MARK: - Connect IBOutlet
     
     @IBOutlet weak var webView: WKWebView!
     @IBOutlet weak var substrate: UILabel!
-
-//// MARK: - Connect IBAction
-//    @IBAction func buttonAction(_ sender: Any) {
-//        // Запускаем процесс составления базы (это кастыль решил так реализовать). И когда база составлена ищу в ней связку login/password
-//
-//        fillingBase {
-//            DispatchQueue.main.async {
-//
-//                var flack = false
-//                for i in 1...base.count {
-//
-//                    guard  let login = self.loginTextField.text, login.count > 0 else {
-//                        self.showAlert(massage: "Поле Login пустое", title: "Error")
-//                        return
-//                    }
-//
-//                    guard let password = self.passwordTextField.text, password.count > 0   else {
-//                        self.showAlert(massage: "Поле Password пустое", title: "Error")
-//                        return
-//                    }
-//
-//                    if base[i-1].login == self.loginTextField.text {
-//                        if base[i-1].password == self.passwordTextField.text {
-//
-//                            self.mainProfile.name = base[i-1].name
-//                            self.mainProfile.birthday = base[i-1].birthday
-//                            self.mainProfile.avatar = base[i-1].avatar
-//                            self.mainProfile.favoriteАnime = base[i-1].favoriteАnime
-//                            self.mainProfile.friends = base[i-1].friends
-//
-//                            let keychainLogin = encryptMessage(message: login, encryptionKey: "hooP")
-//                            let keychainPasword = encryptMessage(message: password, encryptionKey: "hooP")
-//                            self.keychain.set(keychainLogin, forKey: Keys.login)
-//                            self.keychain.set(keychainPasword, forKey: Keys.password)
-//                            self.view.endEditing(true)
-//
-//
-//                            self.performSegue(withIdentifier: "goToInfo", sender: self)
-//                            flack = true
-//                        }
-//                    }
-//                }
-//
-//                if flack == false {
-//                    self.showAlert(massage: "Пользователь в базе не зарегистрирован", title: "Error")
-//                }
-//            }
-//        }
-//    }
-//
     
 // MARK: - Функции кастомизации UILabel и UIButton
     private func designFor(label: UILabel) {
@@ -96,8 +41,12 @@ class LoginViewController: UIViewController, WKNavigationDelegate {
         
         designFor(label: substrate)  // Кастомизация подложки substrate
         
+        
+        if self.keychain.get(Keys.accessToken) == nil && self.keychain.get(Keys.refreshToken) == nil {
+        webView.isHidden = false
         webView.navigationDelegate = self
 //     MARK: - Авторизация пользователя, получение кода авторизации (authorizationCode)
+        
         var urlComponents = URLComponents()
         urlComponents.scheme = "https"
         urlComponents.host = "shikimori.org"
@@ -110,41 +59,36 @@ class LoginViewController: UIViewController, WKNavigationDelegate {
         
         let request = URLRequest(url: urlComponents.url!)
         webView.load(request)
-        
+        } else {
+            webView.isHidden = true
+        }
     }
     
-//    override func loadView() {
-//        super.loadView()
-//        
-//        if self.keychain.get(Keys.login) != nil && self.keychain.get(Keys.password) != nil {
-//            
-//            fillingBase {
-//                DispatchQueue.main.async {
-//                    for i in 1...base.count {
-//                        
-//                        let login = decryptMessage(encryptedMessage: self.keychain.get(Keys.login)!, encryptionKey: "hooP")
-//                        let password = decryptMessage(encryptedMessage: self.keychain.get(Keys.password)!, encryptionKey: "hooP")
-//                        
-//                        if login == base[i-1].login {
-//                            if password == base[i-1].password {
-//                                self.mainProfile.name = base[i-1].name
-//                                self.mainProfile.birthday = base[i-1].birthday
-//                                self.mainProfile.avatar = base[i-1].avatar
-//                                self.mainProfile.favoriteАnime = base[i-1].favoriteАnime
-//                                self.mainProfile.friends = base[i-1].friends
-//                                
-//                                
-//                                self.performSegue(withIdentifier: "goToStart", sender: self)
-//                                
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
+    override func loadView() {
+        super.loadView()
+        
+        if self.keychain.get(Keys.accessToken) != nil && self.keychain.get(Keys.refreshToken) != nil {
+            
+            self.loadProfile {
+                DispatchQueue.main.async {
+                    self.loadAnime {
+                        DispatchQueue.main.async {
+                            self.loadFriends {
+                                DispatchQueue.main.async {
+                                    self.performSegue(withIdentifier: "goToStart", sender: self)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     override func viewWillLayoutSubviews() {
-        if chek { // Костыль для перехода в самое начало
+        
+        
+        if UserDefaults.standard.bool(forKey: Keys.chek) { // Костыль для перехода в самое начало
             webView.isHidden = false
             var urlComponents = URLComponents()
             urlComponents.scheme = "https"
@@ -158,7 +102,7 @@ class LoginViewController: UIViewController, WKNavigationDelegate {
             
             let request = URLRequest(url: urlComponents.url!)
             webView.load(request)
-            chek = false
+            UserDefaults.standard.set(false, forKey: Keys.chek) // Костыль для перехода в самое начало
         }
     }
     
@@ -174,8 +118,7 @@ class LoginViewController: UIViewController, WKNavigationDelegate {
         if fragment == nil {
             decisionHandler(.allow)
         } else {
-            
-            authorizationCode = fragment!.value!
+            let authorizationCode = fragment!.value!
             
             decisionHandler(.cancel)
             webView.isHidden = true
@@ -194,8 +137,14 @@ class LoginViewController: UIViewController, WKNavigationDelegate {
                 case .success(let value):
                     let json = JSON(value)
                     //     MARK: - Сохранение  токена (access_token)
-                    self.access_token = json["access_token"].stringValue
-                    self.refresh_token = json["refresh_token"].stringValue
+                    
+                    let accessToken = json["access_token"].stringValue
+                    let refreshToken = json["refresh_token"].stringValue
+                    
+                    let keychainselfAccessToken = encryptMessage(message: accessToken, encryptionKey: "hooP")
+                    let keychainselfRefreshToken = encryptMessage(message: refreshToken, encryptionKey: "hooP")
+                    self.keychain.set(keychainselfAccessToken, forKey: Keys.accessToken)
+                    self.keychain.set(keychainselfRefreshToken, forKey: Keys.refreshToken)
                     
                     self.loadProfile {
                         DispatchQueue.main.async {
@@ -204,10 +153,7 @@ class LoginViewController: UIViewController, WKNavigationDelegate {
                                     
                                     self.loadFriends {
                                         DispatchQueue.main.async {
-                                            //                                                    let keychainLogin = encryptMessage(message: login, encryptionKey: "hooP")
-                                            //                                                    let keychainPasword = encryptMessage(message: password, encryptionKey: "hooP")
-                                            //                                                    self.keychain.set(keychainLogin, forKey: Keys.login)
-                                            //                                                    self.keychain.set(keychainPasword, forKey: Keys.password)
+
                                             self.performSegue(withIdentifier: "goToInfo", sender: self)
                                             
                                         }
@@ -218,14 +164,57 @@ class LoginViewController: UIViewController, WKNavigationDelegate {
                     }
                     
                 case .failure(let error):
-                    let arres = error.localizedDescription
-                    self.showAlert(massage: arres, title: "Error access_token")
+                    let json = JSON(error)
+                    let task = json["error"].stringValue
+                    
+                    if task == "invalid_token" {
+                        self.refreshToken()
+                    } else {
+                        let arres = error.localizedDescription
+                        self.showAlert(massage: arres, title: "Error access_token")
+                    }
                 }
             }
             
         }
     }
     
+
+    
+    func refreshToken() {
+        
+        let refreshToken = decryptMessage(encryptedMessage: self.keychain.get(Keys.refreshToken)!, encryptionKey: "hooP")
+        let url = "https://shikimori.org/oauth/token"
+        let parameters : [String: Any] = [ "User-Agent" : "Anime_Viewe" ,
+                                           "grant_type" : "refresh_token" ,
+                                           "client_id" : "82a953045b3a5fe2f0b3360e6d8be5697625f54733950494a4946344ea44175a" ,
+                                           "client_secret" : "1afd4a059fcda8c9997843e22e6c6da89158ac0df0c15648ad4f5d584472c81f" ,
+                                           "refresh_token" : refreshToken ]
+        
+        request(url,  method: .post, parameters: parameters).validate(contentType: ["application/json"]).responseJSON() { response in
+            
+            switch response.result {
+                case .success(let value):
+                    let json = JSON(value)
+                    let accessToken = json["access_token"].stringValue
+                    let refreshToken = json["refresh_token"].stringValue
+                    
+                    let keychainselfAccessToken = encryptMessage(message: accessToken, encryptionKey: "hooP")
+                    let keychainselfRefreshToken = encryptMessage(message: refreshToken, encryptionKey: "hooP")
+                    
+                    self.keychain.delete(Keys.accessToken)
+                    self.keychain.delete(Keys.refreshToken)
+
+                    self.keychain.set(keychainselfAccessToken, forKey: Keys.accessToken)
+                    self.keychain.set(keychainselfRefreshToken, forKey: Keys.refreshToken)
+                
+                case .failure(let error):
+                    let arres = error.localizedDescription
+                    self.showAlert(massage: arres, title: "Error refresh access_token")
+            }
+        }
+    }
+            
 //     MARK: - Получение данных о пользователе (id ...)
     private func loadProfile(completioHandler : (() ->Void)?) {
         
@@ -234,11 +223,13 @@ class LoginViewController: UIViewController, WKNavigationDelegate {
         urlComponents.host = "shikimori.org"
         urlComponents.path = "/api/users/whoami"
         
+        let accessToken = decryptMessage(encryptedMessage: self.keychain.get(Keys.accessToken)!, encryptionKey: "hooP")
+        
         var r = URLRequest(url: urlComponents.url!)
         r.httpMethod = "GET"
         r.setValue("User-Agent", forHTTPHeaderField: "Anime_Viewe")
         r.setValue("application/json", forHTTPHeaderField: "Accept")
-        r.setValue("Bearer \(self.access_token)", forHTTPHeaderField: "Authorization")
+        r.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         
         request(r).responseJSON() { response in
             
@@ -254,6 +245,7 @@ class LoginViewController: UIViewController, WKNavigationDelegate {
             case .failure(let error):
                 let arres = error.localizedDescription
                 self.showAlert(massage: arres, title: "Error Profile")
+                return
             }
             completioHandler?()
         }
