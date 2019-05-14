@@ -1,11 +1,10 @@
 import Foundation
 import RNCryptor
 
-var chek = false // Костыль для перехода в самое начало
-
 struct Keys { // Ключевые слова для keychain
-    static let login = "login"
-    static let password = "password"
+    static let chek = "chek"
+    static let accessToken = "access_token"
+    static let refreshToken = "refresh_token"
 }
 
 func encryptMessage(message: String, encryptionKey: String) -> String { // encrypt текст
@@ -56,6 +55,7 @@ struct News { // Структура News
 struct Аnime { // Структура Аnime
     var close: Bool
     var flack: Bool
+    var descriptionFlack: Bool
     var id: Int
     var name: String
     var avatar: String
@@ -74,6 +74,7 @@ struct Аnime { // Структура Аnime
         self.maxSeries = 1
         self.flack = false
         self.description = ""
+        self.descriptionFlack = false
         self.avatar = ""
         self.avatarImage = UIImage()
         self.status = ""
@@ -218,4 +219,53 @@ class FriendProfile {         // Структура профиля друга Si
     static let instance = FriendProfile()
 }
 
+func namedConstructor(text: String) -> String { // Получение коректного имени
+    let text = text
+    let result = text.split(separator: "/")
+    let word = String(result.last!).split(separator: "?")
+    let name = String(word.last!) + String(word.first!)
+    return name
+}
+
+
+func getDocumentsDir() -> URL {  // Получение дирректории
+    return FileManager.default.urls(for: FileManager.SearchPathDirectory.documentDirectory, in: .userDomainMask)[0]
+}
+
+func fileSestemSave(namePhoto: String, img: UIImage) {  // Сохранение картинки
+    let fileUrl = getDocumentsDir().appendingPathComponent(namePhoto)
+    
+    guard let data = img.pngData() else { return }
+    
+    do {
+        try data.write(to: fileUrl)
+    } catch {
+        print(error)
+        return
+    }
+    print("Image saved")
+}
+
+func loadImage(namePhoto: String) -> UIImage {  // Чтение картинки
+    let fileUrl = getDocumentsDir().appendingPathComponent(namePhoto)
+    
+    do {
+        let imageData = try Data(contentsOf: fileUrl)
+        return UIImage(data: imageData)!
+    } catch {
+        return UIImage()
+    }
+}
+
+func deleteImage(namePhoto: String) {  // Удаление картинки
+    let fileUrl = getDocumentsDir().appendingPathComponent(namePhoto)
+    let fileManager = FileManager.default
+    do {
+        try fileManager.removeItem(at: fileUrl)
+    } catch {
+        print(error)
+        return
+    }
+    print("Image delete")
+}
 
