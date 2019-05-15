@@ -126,6 +126,8 @@ class NewsViewController: UIViewController, UITableViewDelegate,  UITableViewDat
         let image = UIImage(named: likeBase[indexPath.section].image + ".jpg")
         let imageTitle = image?.scaled(to: CGFloat(self.rowSizer[indexPath.section].size - 25))
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "InsideTableViewCell") as? InsideTableViewCell else { return UITableViewCell() }
+        
+     
         cell.textLabel?.text = likeBase[indexPath.section].news
         cell.textLabel?.lineBreakMode = .byWordWrapping
         cell.textLabel?.numberOfLines = 0

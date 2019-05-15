@@ -22,10 +22,12 @@ func decryptMessage(encryptedMessage: String, encryptionKey: String) -> String {
 }
 
 struct Friend { // Структура Friend
+    var id: Int
     var name: String
     var avatarName: String
     var avatar: UIImage
     init() {
+        self.id = 0
         self.name = ""
         self.avatarName = ""
         self.avatar = UIImage()
@@ -52,23 +54,74 @@ struct News { // Структура News
 }
 
 struct Аnime { // Структура Аnime
+    var close: Bool
     var flack: Bool
     var id: Int
     var name: String
-    var avatar: UIImage
+    var avatar: String
+    var avatarImage: UIImage
+    var status: String
     var series: Int
-    var seriesURL: [String]
+    var maxSeries: Int
+    var colectionImage: [String]
+    var colectionImG: [UIImage]
     var description: String
     init() {
+        self.close = false
         self.id = 0
         self.name = ""
         self.series = 1
-        self.seriesURL = []
+        self.maxSeries = 1
         self.flack = false
         self.description = ""
-        self.avatar = UIImage()
+        self.avatar = ""
+        self.avatarImage = UIImage()
+        self.status = ""
+        self.colectionImage = []
+        self.colectionImG = []
     }
 }
+
+struct АnimeList { // Структура АnimeList
+    var flackOne: Bool
+    var flackTwo: Bool
+    var id: Int
+    var name: String
+    var avatar: String
+    var avatarImage: UIImage
+    var status: String
+    var maxSeries: Int
+    init() {
+        self.flackOne = false
+        self.flackTwo = false
+        self.id = 0
+        self.name = ""
+        self.maxSeries = 1
+        self.avatar = ""
+        self.avatarImage = UIImage()
+        self.status = ""
+    }
+}
+
+struct АnimeFriend { // Структура Аnime friend
+    var close: Bool
+    var id: Int
+    var name: String
+    var series: Int
+    var avatar: String
+    var colectionImage: [String]
+    var colectionImG: [UIImage]
+    init() {
+        self.close = false
+        self.id = 0
+        self.name = ""
+        self.series = 1
+        self.avatar = ""
+        self.colectionImage = []
+        self.colectionImG = []
+    }
+}
+
 
 struct Profile {         // Структура для общей базы
     var id: Int
@@ -101,195 +154,6 @@ struct Razmermer {   // Структура для размеров ячейки 
         self.size = size
         
     }
-}
-
-var base = [Profile]() // Общаяя база
-
-func fillingBase(completioHandler : (() ->Void)?) {  // Заполнение общей базы
-    var count = 0
-    var point = 0
-    var animePoint = 0
-    var friend = 0
-    base.removeAll()
-    base.append(Profile())
-    base[point].id = count; count+=1
-    base[point].login = "Mark"
-    base[point].password = "123"
-    base[point].name = "Марк Аврелий"
-    base[point].birthday = "14.02.1990"
-    base[point].avatar = "mark"
-    base[point].friends.append(Friend())
-    base[point].friends[friend].name = "Алина Вей"
-    base[point].friends[friend].avatarName = "aloe"
-    friend+=1
-    base[point].favoriteАnime.append(Аnime())
-    base[point].favoriteАnime[animePoint].id = 0
-    base[point].favoriteАnime[animePoint].name = "Beck"
-    base[point].favoriteАnime[animePoint].description = "Юкио Танака, а для друзей Коюки, с детства любил петь. Впрочем, талант его не нашёл применения, и сам он ведёт обыкновенную школьную жизнь."
-    base[point].favoriteАnime[animePoint].series = 3
-    point+=1
-    friend = 0
-    animePoint = 0
-    base.append(Profile())
-    base[point].id = count; count+=1
-    base[point].login = "Aloe"
-    base[point].password = "321"
-    base[point].name = "Алина Вей"
-    base[point].birthday = "20.02.1996"
-    base[point].avatar = "aloe"
-    base[point].favoriteАnime.append(Аnime())
-    base[point].favoriteАnime[animePoint].id = 1
-    base[point].favoriteАnime[animePoint].name = "Мастера Меча Онлайн"
-    base[point].favoriteАnime[animePoint].description = "И вот вышла многопользовательская игра нового поколения — игра, где смерть реальна и бегство невозможно. Единственный выход — дойти до конца. А называется игра «Sword Art Online»."
-    base[point].favoriteАnime[animePoint].series = 1
-    point+=1
-    animePoint = 0
-    base.append(Profile())
-    base[point].id = count; count+=1
-    base[point].login = "Hloya"
-    base[point].password = "456"
-    base[point].name = "Хлоя Мауер"
-    base[point].birthday = "04.01.1992"
-    base[point].avatar = "hloya"
-    base[point].favoriteАnime.append(Аnime())
-    base[point].favoriteАnime[animePoint].id = 2
-    base[point].favoriteАnime[animePoint].name = "Твоё имя"
-    base[point].favoriteАnime[animePoint].description = "Мицуха Миямидзу — обычная девушка, уставшая от жизни в провинции. Её отец, мэр города, ведёт избирательную кампанию, а в семейном синтоистском храме ей приходится прилюдно исполнять древние ритуалы."
-    point+=1
-    animePoint = 0
-    base.append(Profile())
-    base[point].id = count; count+=1
-    base[point].login = "Max"
-    base[point].password = "654"
-    base[point].name = "Макс Фрай"
-    base[point].birthday = "14.12.1986"
-    base[point].avatar = "max"
-    base[point].favoriteАnime.append(Аnime())
-    base[point].favoriteАnime[animePoint].id = 3
-    base[point].favoriteАnime[animePoint].name = "Стальной алхимик"
-    base[point].favoriteАnime[animePoint].description = "В этом мире существуют алхимики — люди, владеющие искусством алхимии, способностью манипулировать материей и преобразовывать вещество. "
-    point+=1
-    animePoint = 0
-    base.append(Profile())
-    base[point].id = count; count+=1
-    base[point].login = "Len"
-    base[point].password = "789"
-    base[point].name = "Василий Мисковец"
-    base[point].birthday = "14.04.1992"
-    base[point].avatar = "len"
-    base[point].favoriteАnime.append(Аnime())
-    base[point].favoriteАnime[animePoint].id = 4
-    base[point].favoriteАnime[animePoint].name = "Шумиха"
-    base[point].favoriteАnime[animePoint].description = "В конце 1930-х годов, в разгар Великой депрессии, из Чикаго отправляется трансконтинентальный поезд «Крадущийся тигр», который впоследствии захватывают сразу две враждующие банды. Понятное дело, разгорается схватка, в которой то там, то тут мелькают незадачливые пассажиры, и летящий на всех парах состав начинает оставлять за собой кровавый след, тянущийся вдоль всей страны."
-    point+=1
-    animePoint = 0
-    base.append(Profile())
-    base[point].id = count; count+=1
-    base[point].login = "Pop"
-    base[point].password = "987"
-    base[point].name = "Михаил Аустерлиц"
-    base[point].birthday = "23.04.1992"
-    base[point].avatar = "pop"
-    base[point].friends.append(Friend())
-    base[point].friends[friend].name = "Алина Вей"
-    base[point].friends[friend].avatarName = "aloe"
-    friend+=1
-    base[point].friends.append(Friend())
-    base[point].friends[friend].name = "Хлоя Мауер"
-    base[point].friends[friend].avatarName = "hloya"
-    friend+=1
-    base[point].friends.append(Friend())
-    base[point].friends[friend].name = "Марк Аврелий"
-    base[point].friends[friend].avatarName = "mark"
-    friend+=1
-    base[point].friends.append(Friend())
-    base[point].friends[friend].name = "Макс Фрай"
-    base[point].friends[friend].avatarName = "max"
-    friend+=1
-    base[point].favoriteАnime.append(Аnime())
-    base[point].favoriteАnime[animePoint].id = 5
-    base[point].favoriteАnime[animePoint].name = "Восхождение героя щита"
-    base[point].favoriteАnime[animePoint].description = "Наофуми Иватани вместе с тремя другими людьми был призван в параллельный мир, чтобы стать его Героем. При переносе в другой мир каждый из них получил специальную экипировку, которая соответствует типу Героя. Наш же протагонист получил в руки легендарный щит и решил отправиться в путешествие по этому сказочному миру."
-    base[point].favoriteАnime[animePoint].series = 3
-    animePoint+=1
-    base[point].favoriteАnime.append(Аnime())
-    base[point].favoriteАnime[animePoint].id = 1
-    base[point].favoriteАnime[animePoint].name = "Мастера Меча Онлайн"
-    base[point].favoriteАnime[animePoint].description = "И вот вышла многопользовательская игра нового поколения — игра, где смерть реальна и бегство невозможно. Единственный выход — дойти до конца. А называется игра «Sword Art Online»."
-    base[point].favoriteАnime[animePoint].series = 4
-    point+=1
-    animePoint = 0
-    
-    for i in 1...base.count {
-        if base[i-1].friends.count != 0 {
-            for m in 1...base[i-1].friends.count {
-                base[i-1].friends[m-1].avatar = UIImage(named: base[i-1].friends[m-1].avatarName + ".jpg")!
-            }
-            for m in 1...base[i-1].favoriteАnime.count {
-                base[i-1].favoriteАnime[m-1].avatar = UIImage(named: base[i-1].favoriteАnime[m-1].name + ".jpg")!
-            }
-        }
-        base[i-1].id = i-1
-    }
-    
-    completioHandler?()
-}
-
-var animeBase = [Аnime]() // Посный список Аниме
-var animelist = [Аnime]() // Предлагаемый список Аниме
-
-func fillinganimeBase(completioHandler : (() ->Void)?) { // Составление списка аниме
-    var animePoint = 0
-    animeBase.removeAll()
-    animeBase.append(Аnime())
-    animeBase[animePoint].id = animePoint
-    animeBase[animePoint].name = "Beck"
-    animeBase[animePoint].series = 4
-    animeBase[animePoint].seriesURL = ["3406950", "3406956", "3418397", "3418398"]
-    animeBase[animePoint].description = "Юкио Танака, а для друзей Коюки, с детства любил петь. Впрочем, талант его не нашёл применения, и сам он ведёт обыкновенную школьную жизнь."
-    animePoint+=1
-    animeBase.append(Аnime())
-    animeBase[animePoint].id = animePoint
-    animeBase[animePoint].name = "Мастера Меча Онлайн"
-    animeBase[animePoint].series = 4
-    animeBase[animePoint].seriesURL = ["3025745", "3032316", "3039521", "3044296"]
-    animeBase[animePoint].description = "И вот вышла многопользовательская игра нового поколения — игра, где смерть реальна и бегство невозможно. Единственный выход — дойти до конца. А называется игра «Sword Art Online»."
-    animePoint+=1
-    animeBase.append(Аnime())
-    animeBase[animePoint].id = animePoint
-    animeBase[animePoint].name = "Твоё имя"
-    animeBase[animePoint].series = 1
-    animeBase[animePoint].seriesURL = ["3377720"]
-    animeBase[animePoint].description = "Мицуха Миямидзу — обычная девушка, уставшая от жизни в провинции. Её отец, мэр города, ведёт избирательную кампанию, а в семейном синтоистском храме ей приходится прилюдно исполнять древние ритуалы."
-    animePoint+=1
-    animeBase.append(Аnime())
-    animeBase[animePoint].id = animePoint
-    animeBase[animePoint].name = "Стальной алхимик"
-    animeBase[animePoint].series = 51
-    animeBase[animePoint].seriesURL = ["2884233", "2884241", "2884246"]
-    animeBase[animePoint].description = "В этом мире существуют алхимики — люди, владеющие искусством алхимии, способностью манипулировать материей и преобразовывать вещество. "
-    animePoint+=1
-    animeBase.append(Аnime())
-    animeBase[animePoint].id = animePoint
-    animeBase[animePoint].name = "Шумиха"
-    animeBase[animePoint].series = 4
-    animeBase[animePoint].seriesURL = ["3296861", "3296863", "3296864", "3296866"]
-    animeBase[animePoint].description = "В конце 1930-х годов, в разгар Великой депрессии, из Чикаго отправляется трансконтинентальный поезд «Крадущийся тигр», который впоследствии захватывают сразу две враждующие банды. Понятное дело, разгорается схватка, в которой то там, то тут мелькают незадачливые пассажиры, и летящий на всех парах состав начинает оставлять за собой кровавый след, тянущийся вдоль всей страны."
-    animePoint+=1
-    animeBase.append(Аnime())
-    animeBase[animePoint].id = animePoint
-    animeBase[animePoint].name = "Восхождение героя щита"
-    animeBase[animePoint].series = 4
-    animeBase[animePoint].seriesURL = ["3521828", "3530835", "3535432", "3540212"]
-    animeBase[animePoint].description = "Наофуми Иватани вместе с тремя другими людьми был призван в параллельный мир, чтобы стать его Героем. При переносе в другой мир каждый из них получил специальную экипировку, которая соответствует типу Героя. Наш же протагонист получил в руки легендарный щит и решил отправиться в путешествие по этому сказочному миру."
-    animePoint+=1
-    
-    for m in 1...animeBase.count {
-        animeBase[m-1].avatar = UIImage(named: animeBase[m-1].name + ".jpg")!
-    }
-    
-    animelist=animeBase
-    completioHandler?()
 }
 
 var likeBase = [News]() // База новосте
@@ -330,8 +194,8 @@ func fillingLikeBase(completioHandler : (() ->Void)?) {
     completioHandler?()
 }
 
-
 class MainProfile {         // Структура профиля пользователя Singleton
+    var id = 0
     var name = ""
     var birthday = ""
     var avatar = ""
@@ -341,13 +205,14 @@ class MainProfile {         // Структура профиля пользов�
     static let instance = MainProfile()
 }
 
-
-
 class FriendProfile {         // Структура профиля друга Singleton
     var name = ""
+    var id = 0
     var birthday = ""
-    var avatar = ""
-    var favoriteАnime = [Аnime]()
+    var avatarName = ""
+    var avatar = UIImage()
+    var favoriteАnime = [АnimeFriend]()
+    
     var friends = [Friend]()
     private init() {}
     static let instance = FriendProfile()

@@ -19,7 +19,6 @@ class LoginViewController: UIViewController, WKNavigationDelegate {
 // MARK: - Connect IBOutlet
     
     @IBOutlet weak var webView: WKWebView!
-    
     @IBOutlet weak var substrate: UILabel!
 
 //// MARK: - Connect IBAction
@@ -71,6 +70,7 @@ class LoginViewController: UIViewController, WKNavigationDelegate {
 //        }
 //    }
 //
+    
 // MARK: - Функции кастомизации UILabel и UIButton
     private func designFor(label: UILabel) {
         label.backgroundColor = UIColor(patternImage: UIImage(named: "ww33.jpg")!)
@@ -93,6 +93,7 @@ class LoginViewController: UIViewController, WKNavigationDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         designFor(label: substrate)  // Кастомизация подложки substrate
         
         webView.navigationDelegate = self
@@ -142,6 +143,24 @@ class LoginViewController: UIViewController, WKNavigationDelegate {
 //            }
 //        }
 //    }
+    override func viewWillLayoutSubviews() {
+        if chek { // Костыль для перехода в самое начало
+            webView.isHidden = false
+            var urlComponents = URLComponents()
+            urlComponents.scheme = "https"
+            urlComponents.host = "shikimori.org"
+            urlComponents.path = "/oauth/authorize"
+            urlComponents.queryItems = [
+                URLQueryItem(name: "client_id", value: "82a953045b3a5fe2f0b3360e6d8be5697625f54733950494a4946344ea44175a"),
+                URLQueryItem(name: "redirect_uri", value: "https://shikimori.org/"),
+                URLQueryItem(name: "response_type", value: "code")
+            ]
+            
+            let request = URLRequest(url: urlComponents.url!)
+            webView.load(request)
+            chek = false
+        }
+    }
     
 //     MARK: - Получение токена (authorizationCode)
     func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
@@ -254,7 +273,6 @@ class LoginViewController: UIViewController, WKNavigationDelegate {
                     self.mainProfile.favoriteАnime[count].id = subJson["anime"]["id"].intValue
                     self.mainProfile.favoriteАnime[count].name = subJson["anime"]["name"].stringValue + " ( \(subJson["anime"]["russian"].stringValue))"
                     self.mainProfile.favoriteАnime[count].avatar = subJson["anime"]["image"]["original"].stringValue
-                    
                     self.mainProfile.favoriteАnime[count].series = subJson["episodes"].intValue
                     self.mainProfile.favoriteАnime[count].maxSeries = subJson["anime"]["episodes"].intValue
                     self.mainProfile.favoriteАnime[count].status = subJson["anime"]["status"].stringValue
