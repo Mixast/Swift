@@ -7,8 +7,10 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
     @IBOutlet weak var image: UIImageView!
     @IBOutlet weak var tableView: UITableView!
     
+    let mainProfile = MainProfile.instance
     let friendProfile = FriendProfile.instance
-
+    let interactive = CustomInteractiveTransition()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -184,7 +186,11 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
         case 1:
             return 1
         case 2:
-            return friendProfile.favoriteАnime.count
+            if friendProfile.favoriteАnime.count != 0 {
+                return friendProfile.favoriteАnime.count
+            } else {
+                return 1
+            }
         default:
             return 0
         }
@@ -195,7 +201,14 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
         if indexPath.section == 0 && indexPath.row == 0 {
            return 120
         } else if indexPath.section == 2 {
-            return 44
+            if friendProfile.favoriteАnime.count != 0 {
+                var heightView = (CGFloat(Double(friendProfile.favoriteАnime[indexPath.row].name.count)*7.32)/(tableView.frame.size.width))+2
+                heightView.round(.awayFromZero)
+                heightView*=22
+                return heightView
+            } else {
+                return 16
+            }
         } else {
             return 22
         }
@@ -226,20 +239,26 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
             self.view.viewWithTag(90)
         case 1:
             cell.textLabel?.text = friendProfile.birthday
-        case 2: 
-            cell.infoText.text = ""
-            cell.textLabel?.text = friendProfile.favoriteАnime[indexPath.row].name + "\n" + "Просмотрено серий: \(friendProfile.favoriteАnime[indexPath.row].series)"
-            cell.textLabel?.lineBreakMode = .byWordWrapping
-            cell.textLabel?.numberOfLines = 0
-            cell.textLabel?.contentMode = .center
-            guard let viewWithTag = self.view.viewWithTag(100)  else {
-                break
+        case 2:
+            if friendProfile.favoriteАnime.count != 0 {
+                cell.textLabel?.textAlignment = .left
+                cell.infoText.text = ""
+                cell.textLabel?.text = friendProfile.favoriteАnime[indexPath.row].name + "\n" + "Просмотрено серий: \(friendProfile.favoriteАnime[indexPath.row].series)"
+                cell.textLabel?.lineBreakMode = .byWordWrapping
+                cell.textLabel?.numberOfLines = 0
+                cell.textLabel?.contentMode = .center
+                guard let viewWithTag = self.view.viewWithTag(100)  else {
+                    break
+                }
+                guard let viewWithTag2 = self.view.viewWithTag(90)  else {
+                    break
+                }
+                viewWithTag2.removeFromSuperview()
+                viewWithTag.removeFromSuperview()
+            } else {
+                cell.infoText.text = "Loading"
+                cell.textLabel?.textAlignment = .center
             }
-            guard let viewWithTag2 = self.view.viewWithTag(90)  else {
-                break
-            }
-            viewWithTag2.removeFromSuperview()
-            viewWithTag.removeFromSuperview()
         default:
             break
         }
@@ -247,6 +266,59 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
         return cell
     }
 
+    // MARK: - Переход при нажатии на строку
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+        if indexPath.section == 2 {
+          
+            loadImageProfile(section: indexPath.row) { // Составляем базу картинок
+                DispatchQueue.main.async {
+                    
+                    let detailVC = self.storyboard?.instantiateViewController(withIdentifier: "TabOneCollectionViewController") as! TabOneCollectionViewController
+                    detailVC.transportLine = indexPath.row
+                    detailVC.profile = "friendProfile"
+                    detailVC.transitioningDelegate = self
+                    self.present(detailVC, animated: true)
+                    
+                }
+            }
+        }
+    }
+    
+    //     MARK: - Получение скриншоты из аниме
+    private func loadImageProfile(section: Int, completioHandler : (() ->Void)?) {
+        request("https://shikimori.org/api/animes/\(friendProfile.favoriteАnime[section].id)/screenshots",  method: .get).validate(contentType: ["application/json"]).responseJSON() { response in
+            
+            switch response.result {
+            case .success(let value):
+                let json = JSON(value)
+                
+                self.friendProfile.favoriteАnime[section].colectionImage.removeAll()
+                for (_, subJson):(String, JSON) in json[] {
+                self.friendProfile.favoriteАnime[section].colectionImage.append(subJson["original"].stringValue)
+                self.friendProfile.favoriteАnime[section].colectionImG.append(UIImage())
+                }
+            case .failure(let error):
+                let arres = error.localizedDescription
+                self.showAlert(massage: arres, title: "Error loading")
+            }
+            completioHandler?()
+        }
+    }
+    
 }
 
+// MARK: - Кастомная анимация перехода detailVC.transitioningDelegate
+
+extension TabTwoTableController:  UIViewControllerTransitioningDelegate {
+    func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        return animatedTransition()
+    }
+    
+    func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        return animatedTransitionDismissed()
+    }
+        
+}
 

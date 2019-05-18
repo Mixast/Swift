@@ -34,7 +34,7 @@ class MainViewController: UIViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        if chek { // Костыль для перехода в самое начало
+        if UserDefaults.standard.bool(forKey: Keys.chek) { // Костыль для перехода в самое начало
             dismiss(animated: true)
         }
     }
@@ -61,7 +61,7 @@ class MainViewController: UIViewController {
                     
                     let customViewControllersArray : NSArray = [newViewController]
                     self.navigationController?.viewControllers = customViewControllersArray as! [UIViewController]
-                    
+                
                     self.performSegue(withIdentifier: "goToStartTwo", sender: self)
                 
             }

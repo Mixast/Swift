@@ -59,6 +59,7 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
                     self.mainProfile.favoriteАnime[i-1].colectionImG.removeAll()
                 }
             }
+            
             for i in stride(from: 1, through: self.friendProfile.favoriteАnime.count, by: 1) {
                 if self.friendProfile.favoriteАnime[i-1].close {
                     self.friendProfile.favoriteАnime[i-1].close = false
@@ -67,36 +68,39 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
             }
         }
         
+        
 //     MARK: - Параллельно прогружаем скриншоты
         if profile == "mainProfile" {
-            
-            for i in 1...mainProfile.favoriteАnime[transportLine].colectionImage.count {
-                if self.mainProfile.favoriteАnime[self.transportLine].close { } else {
-                    let imageURL = NSURL(string: "https://shikimori.org" + mainProfile.favoriteАnime[transportLine].colectionImage[i-1])
-                    let queue = DispatchQueue.global(qos: .utility)
-                    queue.async{
-                        if let data = try? Data(contentsOf: imageURL! as URL){
-                            DispatchQueue.main.async {
-                                self.mainProfile.favoriteАnime[self.transportLine].colectionImG[i-1] = UIImage(data: data)!
-                                let indexPath = IndexPath(row: i-1, section: 0)
-                                self.collectionView.reloadItems(at: [indexPath])
+            if mainProfile.favoriteАnime[transportLine].colectionImage.count != 0 {
+                for i in 1...mainProfile.favoriteАnime[transportLine].colectionImage.count {
+                    if self.mainProfile.favoriteАnime[self.transportLine].close { } else {
+                        let imageURL = NSURL(string: "https://shikimori.org" + mainProfile.favoriteАnime[transportLine].colectionImage[i-1])
+                        let queue = DispatchQueue.global(qos: .utility)
+                        queue.async{
+                            if let data = try? Data(contentsOf: imageURL! as URL){
+                                DispatchQueue.main.async {
+                                    self.mainProfile.favoriteАnime[self.transportLine].colectionImG[i-1] = UIImage(data: data)!
+                                    let indexPath = IndexPath(row: i-1, section: 0)
+                                    self.collectionView.reloadItems(at: [indexPath])
+                                }
                             }
                         }
                     }
                 }
             }
         } else {
-            
-            for i in 1...friendProfile.favoriteАnime[transportLine].colectionImage.count {
-                if self.mainProfile.favoriteАnime[self.transportLine].close { } else {
-                    let imageURL = NSURL(string: "https://shikimori.org" + friendProfile.favoriteАnime[transportLine].colectionImage[i-1])
-                    let queue = DispatchQueue.global(qos: .utility)
-                    queue.async{
-                        if let data = try? Data(contentsOf: imageURL! as URL){
-                            DispatchQueue.main.async {
-                                self.friendProfile.favoriteАnime[self.transportLine].colectionImG[i-1] = UIImage(data: data)!
+            if friendProfile.favoriteАnime[transportLine].colectionImage.count != 0 {
+                for i in 1...friendProfile.favoriteАnime[transportLine].colectionImage.count {
+                    if self.mainProfile.favoriteАnime[self.transportLine].close { } else {
+                        let imageURL = NSURL(string: "https://shikimori.org" + friendProfile.favoriteАnime[transportLine].colectionImage[i-1])
+                        let queue = DispatchQueue.global(qos: .utility)
+                        queue.async{
+                            if let data = try? Data(contentsOf: imageURL! as URL){
+                                DispatchQueue.main.async {
+                                    self.friendProfile.favoriteАnime[self.transportLine].colectionImG[i-1] = UIImage(data: data)!
                                     let indexPath = IndexPath(row: i-1, section: 0)
                                     self.collectionView.reloadItems(at: [indexPath])
+                                }
                             }
                         }
                     }

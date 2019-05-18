@@ -4,9 +4,11 @@
 target '1l_2S_Mihailov_Mihail' do
   # Comment the next line if you don't want to use dynamic frameworks
   use_frameworks!
+  inhibit_all_warnings!
 
   # Pods for 1l_2S_Mihailov_Mihail
 	pod 'KeychainSwift'
 	pod 'RNCryptor'
-
+	pod 'Alamofire'
+	pod 'SwiftyJSON'
 end

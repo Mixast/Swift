@@ -30,13 +30,20 @@ class TableViewTwoController: UIViewController, UITableViewDelegate, UITableView
         self.tableView.tableFooterView = UIView() //Убираем пустые строки
         
 //             MARK: - Параллельно прогружаем картинки аниме
+        
         let queue = DispatchQueue.global(qos: .utility)
         queue.async{
             DispatchQueue.main.async {
                 for i in 1...self.mainProfile.friends.count {
-                    let imageURL = NSURL(string: self.mainProfile.friends[i-1].avatarName)
-                    if let data = try? Data(contentsOf: imageURL! as URL){
-                        self.mainProfile.friends[i-1].avatar = UIImage(data: data)!
+                    let namePhoto = namedConstructor(text: self.mainProfile.friends[i-1].avatarName)
+                    if loadImage(namePhoto: namePhoto).pngData() == nil {
+                        let imageURL = NSURL(string: self.mainProfile.friends[i-1].avatarName)
+                        if let data = try? Data(contentsOf: imageURL! as URL) {
+                            self.mainProfile.friends[i-1].avatar = UIImage(data: data)!
+                            fileSestemSave(namePhoto: namePhoto, img: UIImage(data: data)!)
+                        }
+                    } else {
+                        self.mainProfile.friends[i-1].avatar = loadImage(namePhoto: namePhoto)
                     }
                 }
                 self.tableView.reloadData()
@@ -44,6 +51,7 @@ class TableViewTwoController: UIViewController, UITableViewDelegate, UITableView
         }
 
     }
+    
     
     //MARK: - Search Bar
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {  //searchBar
