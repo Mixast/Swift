@@ -24,8 +24,11 @@ class NewsViewController: UIViewController, UITableViewDelegate,  UITableViewDat
         }
         super.viewDidLoad()
         
-      
-  
+        // Делаем обновление view при нажании на UIControl
+        for i in 1...dayControl.buttons.count {
+            dayControl.buttons[i-1].addTarget(self, action: #selector(toop), for: .touchUpInside)
+        }
+        
         navigationItem.title = "News"  // Имя поля
         self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
         self.navigationController?.navigationBar.shadowImage = UIImage()
@@ -41,6 +44,11 @@ class NewsViewController: UIViewController, UITableViewDelegate,  UITableViewDat
         tableView.register(headerNib, forHeaderFooterViewReuseIdentifier: "TableViewHistoryHeader")
   
     }
+    
+    @objc func toop() {
+        tableView.reloadData()
+    }
+    
     
     override func didRotate(from fromInterfaceOrientation: UIInterfaceOrientation) {    //reload data при повороте
         tableView.reloadData()
@@ -100,7 +108,26 @@ class NewsViewController: UIViewController, UITableViewDelegate,  UITableViewDat
     // MARK: - numberOfSections
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return likeBase.count
+       // Устанавливаем отображение информации в задисимотси от дня в UIControl
+        if dayControl.selectedDay?.title == Day.monday.title {
+            return 1
+        } else if dayControl.selectedDay?.title == Day.tuesday.title {
+            return 2
+        } else if dayControl.selectedDay?.title == Day.wednesday.title {
+            return 3
+        } else if dayControl.selectedDay?.title == Day.thursday.title {
+            return 4
+        } else if dayControl.selectedDay?.title == Day.friday.title {
+            return 5
+        } else if dayControl.selectedDay?.title == Day.saturday.title {
+            return 1
+        } else if dayControl.selectedDay?.title == Day.sunday.title {
+            return 1
+        } else {
+           return likeBase.count
+        }
+
+
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
@@ -127,7 +154,7 @@ class NewsViewController: UIViewController, UITableViewDelegate,  UITableViewDat
         let imageTitle = image?.scaled(to: CGFloat(self.rowSizer[indexPath.section].size - 25))
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "InsideTableViewCell") as? InsideTableViewCell else { return UITableViewCell() }
         
-     
+ 
         cell.textLabel?.text = likeBase[indexPath.section].news
         cell.textLabel?.lineBreakMode = .byWordWrapping
         cell.textLabel?.numberOfLines = 0
