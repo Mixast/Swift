@@ -1,12 +1,15 @@
 import UIKit
 import Alamofire
 import SwiftyJSON
+import KeychainSwift
+import RNCryptor
 
 class TabTwoTableController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
     @IBOutlet weak var image: UIImageView!
     @IBOutlet weak var tableView: UITableView!
     
+    let keychain = KeychainSwift()
     let mainProfile = MainProfile.instance
     let friendProfile = FriendProfile.instance
     let interactive = CustomInteractiveTransition()
@@ -17,7 +20,7 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
         if friendProfile.favoriteАnime.count == 0 {
         image.image = UIImage(named:  "Hp.jpg")
         } else {
-            let imageURL = NSURL(string: "https://shikimori.org" + friendProfile.favoriteАnime[0].avatar)
+            let imageURL = NSURL(string: "https://shikimori.one" + friendProfile.favoriteАnime[0].avatar)
             if let data = try? Data(contentsOf: imageURL! as URL) {
             image.image = UIImage(data: data)!
             }
@@ -57,7 +60,7 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
     
 //     MARK: - Прогружаем скриншоты возраст друга
     private func loadFriendProfile(id: Int, completioHandler : (() ->Void)?) {
-        request("https://shikimori.org/api/users/\(id)",  method: .get).validate(contentType: ["application/json"]).responseJSON() { response in
+        request("https://shikimori.one/api/users/\(id)",  method: .get).validate(contentType: ["application/json"]).responseJSON() { response in
             
             switch response.result {
             case .success(let value):
@@ -75,11 +78,31 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
 
 //     MARK: - Прогружаем список аниме друга
     private func loadFriendAnime(id: Int, completioHandler : (() ->Void)?) {
-        request("https://shikimori.org/api/users/\(id)/anime_rates?&limit=60",  method: .get).validate(contentType: ["application/json"]).responseJSON() { response in
+        
+//        var urlComponents = URLComponents()
+//        urlComponents.scheme = "https"
+//        urlComponents.host = "shikimori.one"
+//        urlComponents.path = "/api/users/\(id)/anime_rates?&limit=50"
+        
+        
+        let url = "https://shikimori.one/api/users/\(id)/anime_rates?&limit=60"
+        let accessToken = decryptMessage(encryptedMessage: self.keychain.get(Keys.accessToken)!, encryptionKey: "hooP")
+        
+        var r = URLRequest(url: URL(string: url)!)
+        r.httpMethod = "GET"
+        r.setValue("User-Agent", forHTTPHeaderField: "Anime_Viewe")
+        r.setValue("application/json", forHTTPHeaderField: "Accept")
+        r.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        
+        request(r).responseJSON() { response in
+    
+        
+//        request("https://shikimori.one/api/users/\(id)/anime_rates?&limit=60",  method: .get).validate(contentType: ["application/json"]).responseJSON() { response in
             
             switch response.result {
             case .success(let value):
                 let json = JSON(value)
+                print(json)
                 self.friendProfile.favoriteАnime.removeAll()
                 var i = 0
                 for (_, subJson):(String, JSON) in json[] {
@@ -95,6 +118,7 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
                     
                     i+=1
                 }
+                print(self.friendProfile.favoriteАnime)
             case .failure(let error):
                 let arres = error.localizedDescription
                 self.showAlert(massage: arres, title: "Error loading Profile Friend Anime list")
@@ -279,7 +303,7 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
                     detailVC.transportLine = indexPath.row
                     detailVC.profile = "friendProfile"
                     detailVC.transitioningDelegate = self
-                    self.present(detailVC, animated: true)
+//                    self.present(detailVC, animated: true)
                     
                 }
             }
@@ -288,7 +312,7 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
     
     //     MARK: - Получение скриншоты из аниме
     private func loadImageProfile(section: Int, completioHandler : (() ->Void)?) {
-        request("https://shikimori.org/api/animes/\(friendProfile.favoriteАnime[section].id)/screenshots",  method: .get).validate(contentType: ["application/json"]).responseJSON() { response in
+        request("https://shikimori.one/api/animes/\(friendProfile.favoriteАnime[section].id)/screenshots",  method: .get).validate(contentType: ["application/json"]).responseJSON() { response in
             
             switch response.result {
             case .success(let value):
