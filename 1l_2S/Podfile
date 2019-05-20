@@ -11,4 +11,5 @@ target '1l_2S_Mihailov_Mihail' do
 	pod 'RNCryptor'
 	pod 'Alamofire'
 	pod 'SwiftyJSON'
+	pod 'Kanna'
 end
