@@ -13,7 +13,7 @@ class MainViewController: UIViewController {
     
     @IBAction func watchigButton(_ sender: UIButton) { // Переход на страницу поиска в интернете
         let screenName =  String(self.mainProfile.favoriteАnime[0].name).addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
-        let url = "https://shikimori.org/animes?search=" + screenName!
+        let url = "https://shikimori.one/animes?search=" + screenName!
         let urlString = NSURL(string:url)
         
         let svc = SFSafariViewController(url: urlString! as URL)
@@ -38,8 +38,6 @@ class MainViewController: UIViewController {
             dismiss(animated: true)
         }
     }
-    
-
     
 //     MARK: - Анимация передвижения машинки
     @objc func pan(_ recognizer: UIPanGestureRecognizer) {

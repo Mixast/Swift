@@ -1,5 +1,7 @@
 import Foundation
 import RNCryptor
+import WebKit
+import Kanna
 
 struct Keys { // Ключевые слова для keychain
     static let chek = "chek"
@@ -195,7 +197,7 @@ func fillingLikeBase(completioHandler : (() ->Void)?) {
     completioHandler?()
 }
 
-class MainProfile {         // Структура профиля пользователя Singleton
+class MainProfile: Any {         // Структура профиля пользователя Singleton
     var id = 0
     var name = ""
     var birthday = ""
@@ -206,7 +208,7 @@ class MainProfile {         // Структура профиля пользов�
     static let instance = MainProfile()
 }
 
-class FriendProfile {         // Структура профиля друга Singleton
+class FriendProfile: Any {         // Структура профиля друга Singleton
     var name = ""
     var id = 0
     var birthday = ""
@@ -232,7 +234,7 @@ func getDocumentsDir() -> URL {  // Получение дирректории
     return FileManager.default.urls(for: FileManager.SearchPathDirectory.documentDirectory, in: .userDomainMask)[0]
 }
 
-func fileSestemSave(namePhoto: String, img: UIImage) {  // Сохранение картинки
+func fileSistemSave(namePhoto: String, img: UIImage) {  // Сохранение картинки
     let fileUrl = getDocumentsDir().appendingPathComponent(namePhoto)
     
     guard let data = img.pngData() else { return }
@@ -246,12 +248,44 @@ func fileSestemSave(namePhoto: String, img: UIImage) {  // Сохранение 
     print("Image saved")
 }
 
+func fileSistemSaveText(nameFile: String, text: String) {  // Сохранение текста
+    let fileUrl = getDocumentsDir().appendingPathComponent(nameFile)
+        //writing
+    do {
+        try text.write(to: fileUrl, atomically: false, encoding: .utf8)
+    }
+    catch {
+        print(error)
+        return
+    }
+    
+    print("Text saved")
+}
+
+func loadText(nameFile: String) -> String {  // Чтение текста
+    let fileUrl = getDocumentsDir().appendingPathComponent(nameFile)
+    //reading
+    do {
+        let text = try String(contentsOf: fileUrl, encoding: .utf8)
+        return text
+    }
+    catch {
+        print(error)
+        return ""
+    }
+}
+
 func loadImage(namePhoto: String) -> UIImage {  // Чтение картинки
     let fileUrl = getDocumentsDir().appendingPathComponent(namePhoto)
     
     do {
         let imageData = try Data(contentsOf: fileUrl)
-        return UIImage(data: imageData)!
+        
+        guard let image = UIImage(data: imageData) else {
+            return UIImage()
+        }
+
+        return image
     } catch {
         return UIImage()
     }
@@ -269,3 +303,86 @@ func deleteImage(namePhoto: String) {  // Удаление картинки
     print("Image delete")
 }
 
+
+//     MARK: - Очищаем память
+func clearMemory() {
+    let mainProfile = MainProfile.instance
+    let friendProfile = FriendProfile.instance
+    
+    DispatchQueue.global().async {
+        DispatchQueue.main.async {
+            for i in stride(from: 1, through: mainProfile.favoriteАnime.count, by: 1) {
+                if mainProfile.favoriteАnime[i-1].close {
+                    mainProfile.favoriteАnime[i-1].close = false
+                    mainProfile.favoriteАnime[i-1].colectionImG.removeAll()
+                }
+            }
+            
+            for i in stride(from: 1, through: friendProfile.favoriteАnime.count, by: 1) {
+                if friendProfile.favoriteАnime[i-1].close {
+                    friendProfile.favoriteАnime[i-1].close = false
+                    friendProfile.favoriteАnime[i-1].colectionImG.removeAll()
+                }
+            }
+        }
+    }
+    
+}
+
+// Парсим сайт
+func displayURL(url: String) -> String {
+    let myURLString = url
+    guard let myURL = URL(string: myURLString) else {
+        print("Error: \(myURLString) doesn't seem to be a valid URL")
+        return ""
+    }
+    
+    do {
+        let myHTMLString = try String(contentsOf: myURL, encoding: .ascii)
+        if let doc = try? HTML(html: myHTMLString, encoding: .utf8) {
+            // Search for nodes by CSS
+            
+            for link in doc.css("body") {
+                if link["class"] == "p-anime_videos p-anime_videos-index p-db_entries p-db_entries-index p-animes p-animes-index x1200" {
+                    let l = link
+                    for link in l.css("div") {
+                        if link["class"] == "video-link" {
+                            let k = link
+                            for link in k.css("a") {
+                                guard let link = link["href"] else {
+                                    return ""
+                                }
+                                return link
+                            }
+                        }
+                    }
+                }
+                
+            }
+            
+        }
+    } catch let error {
+        print("Error: \(error)")
+    }
+    return ""
+}
+
+//  Получаем день недели
+func getDayOfWeek(_ today:String) -> String? {
+    let formatter  = DateFormatter()
+    formatter.dateFormat = "dd.MM.yyyy"
+    guard let todayDate = formatter.date(from: today) else { return nil }
+    let myCalendar = Calendar(identifier: .gregorian)
+    let weekDay = myCalendar.component(.weekday, from: todayDate)
+    
+    switch weekDay {
+    case 1: return "ВС"
+    case 2: return "ПН"
+    case 3: return "ВТ"
+    case 4: return "СР"
+    case 5: return "ЧТ"
+    case 6: return "ПТ"
+    case 7: return "СБ"
+    default: return ""
+    }
+}

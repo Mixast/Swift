@@ -1,11 +1,3 @@
-//
-//  SelectDayControl.swift
-//  GeekBrains UI
-//
-//  Created by Antol Peshkov on 09/03/2019.
-//  Copyright © 2019 Mad Brains. All rights reserved.
-//
-
 import UIKit
 
 enum Day: Int, CaseIterable {
@@ -30,8 +22,9 @@ enum Day: Int, CaseIterable {
     }
 }
 
-
 class SelectDayControl: UIControl {
+    
+    
     var selectedDay: Day? {
         didSet {
             updateSelectedDay()
@@ -39,18 +32,56 @@ class SelectDayControl: UIControl {
     }
 
     
-    private var buttons: [UIButton] = []
+    
+    var buttons: [UIButton] = []
     private var stackView: UIStackView!
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         
         self.setupView()
+        
     }
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         self.setupView()
+        
+        
+        // По умолчанию ставим текущую дату
+        let date = Date()
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd.MM.yyyy"
+        let result = formatter.string(from: date)
+        if let weekday = getDayOfWeek(result) {
+            var count = 0
+            if weekday == Day.monday.title {
+                count = 0
+            } else if weekday == Day.tuesday.title {
+                count = 1
+            } else if weekday == Day.wednesday.title {
+                count = 2
+            } else if weekday == Day.thursday.title {
+                count = 3
+            } else if weekday == Day.friday.title {
+                count = 4
+            } else if weekday == Day.saturday.title {
+                count = 5
+            } else if weekday == Day.sunday.title {
+                count = 6
+            } else {
+                return
+            }
+            
+            guard let index = buttons.index(of: buttons[count]),
+                let day = Day(rawValue: index)
+                else {
+                    return
+            }
+            self.selectedDay = day
+            self.buttons[count].isSelected = day == self.selectedDay
+            
+        }
     }
     
     override func layoutSubviews() {
@@ -93,4 +124,6 @@ class SelectDayControl: UIControl {
         }
         self.selectedDay = day
     }
+    
+    
 }

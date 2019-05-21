@@ -3,7 +3,7 @@ import WebKit
 import KeychainSwift
 import Alamofire
 import SwiftyJSON
-
+import Kanna
 
 class TableViewOneController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     private var transportLine = 0
@@ -19,24 +19,29 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
         super.viewDidLoad()
         
 //     MARK: - Параллельно прогружаем картинки аниме
-        for i in 1...self.mainProfile.favoriteАnime.count {
-            
-            let namePhoto = namedConstructor(text: self.mainProfile.favoriteАnime[i-1].avatar)
-            if loadImage(namePhoto: namePhoto).pngData() == nil {
-                let imageURL = NSURL(string: "https://shikimori.org" + self.mainProfile.favoriteАnime[i-1].avatar)
+        DispatchQueue.global().async {
+            for i in 1...self.mainProfile.favoriteАnime.count {
                 
-                let queue = DispatchQueue.global(qos: .utility)
-                queue.async{
-                    if let data = try? Data(contentsOf: imageURL! as URL){
-                        DispatchQueue.main.async {
-                            self.mainProfile.favoriteАnime[i-1].avatarImage = UIImage(data: data)!
-                            fileSestemSave(namePhoto: namePhoto, img: UIImage(data: data)!)
-                            self.tableView.reloadSections([i-1], with: .none)
+                let namePhoto = namedConstructor(text: self.mainProfile.favoriteАnime[i-1].avatar)
+                if loadImage(namePhoto: namePhoto).pngData() == nil {
+                    let imageURL = NSURL(string: "https://shikimori.one" + self.mainProfile.favoriteАnime[i-1].avatar)
+                    
+                    let queue = DispatchQueue.global(qos: .utility)
+                    queue.async{
+                        if let data = try? Data(contentsOf: imageURL! as URL){
+                            DispatchQueue.main.async { [weak self] in
+                                guard let self = self else { return }
+                                self.mainProfile.favoriteАnime[i-1].avatarImage = UIImage(data: data)!
+                                fileSistemSave(namePhoto: namePhoto, img: UIImage(data: data)!)
+                                self.tableView.reloadSections([i-1], with: .none)
+                            }
                         }
                     }
+                } else {
+                    DispatchQueue.global().async {
+                        self.mainProfile.favoriteАnime[i-1].avatarImage = loadImage(namePhoto: namePhoto)
+                    }
                 }
-            } else {
-                self.mainProfile.favoriteАnime[i-1].avatarImage = loadImage(namePhoto: namePhoto)
             }
         }
         
@@ -62,7 +67,7 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
         
         // Загрузка списка аниме ( пока на кастыле )
         self.loadAnimeList {
-            DispatchQueue.main.async {
+            DispatchQueue.global().async {
                  for m in 1...self.mainProfile.favoriteАnime.count {
 
                     var count = 0
@@ -79,12 +84,13 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
                 }
                 //     MARK: - Параллельно прогружаем картинки аниме
                 for i in 1...self.animeList.count {
-                    let imageURL = NSURL(string: "https://shikimori.org" + self.animeList[i-1].avatar)
+                    let imageURL = NSURL(string: "https://shikimori.one" + self.animeList[i-1].avatar)
 
                     let queue = DispatchQueue.global(qos: .utility)
                     queue.async{
                         if let data = try? Data(contentsOf: imageURL! as URL){
-                            DispatchQueue.main.async {
+                            DispatchQueue.main.async { [weak self] in
+                                guard let self = self else { return }
                                 self.animeList[i-1].avatarImage = UIImage(data: data)!
                                 self.animeList[i-1].flackTwo = true
 
@@ -108,13 +114,29 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
                                  for: records.filter{ $0.displayName.contains("shikimori") },
             completionHandler: { })
         }
+        
+        DispatchQueue.global().async {
+            for i in 1...self.mainProfile.favoriteАnime.count {
+                if self.mainProfile.favoriteАnime[i-1].avatarImage.pngData() != nil {
+                    let namePhoto = namedConstructor(text: self.mainProfile.favoriteАnime[i-1].avatar)
+                    deleteImage(namePhoto: namePhoto)
+                }
+                if self.mainProfile.favoriteАnime[i-1].description != "" {
+                    let nameTextFile = "description_" + self.mainProfile.favoriteАnime[i-1].name + ".txt"
+                    deleteImage(namePhoto: nameTextFile)
+                }
+            }
+            self.mainProfile.favoriteАnime.removeAll()
+            self.mainProfile.friends.removeAll()
+        }
+        
         UserDefaults.standard.set(true, forKey: Keys.chek) // Костыль для перехода в самое начало
         dismiss(animated: true)
     }
     
     //     MARK: - Получение списка анимэ для добавления
     private func loadAnimeList(completioHandler : (() ->Void)?) {
-        request("https://shikimori.org/api/animes?censored=false&genre=1,2,11&limit=20",  method: .get).validate(contentType: ["application/json"]).responseJSON() { response in
+        request("https://shikimori.one/api/animes?censored=false&genre=1,2,11&limit=20",  method: .get).validate(contentType: ["application/json"]).responseJSON() { response in
             switch response.result {
             case .success(let value):
                 let json = JSON(value)
@@ -190,11 +212,12 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
                         
                         
                         if self.animeList[i-1].avatarImage == UIImage() {
-                            let imageURL = NSURL(string: "https://shikimori.org" + self.animeList[i-1].avatar)
+                            let imageURL = NSURL(string: "https://shikimori.one" + self.animeList[i-1].avatar)
                             let queue = DispatchQueue.global(qos: .utility)
                             queue.async{
                                 if let data = try? Data(contentsOf: imageURL! as URL) {
-                                    DispatchQueue.main.async {
+                                    DispatchQueue.main.async { [weak self] in
+                                        guard let self = self else { return }
                                         self.animeList[i-1].avatarImage = UIImage(data: data)!
                                         self.mainProfile.favoriteАnime[indx].avatarImage = self.animeList[i-1].avatarImage
                                         self.animeList[i-1].flackOne = true
@@ -229,7 +252,6 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
 
 // MARK: - Создание секций и их тайтлов
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        
         let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: "TableViewAnimeHeader") as? TableViewAnimeHeader
         header?.viewAnime.backgroundColor = #colorLiteral(red: 0.1247105226, green: 0.1294333935, blue: 0.1380615532, alpha: 1)
         header?.animeButton.setTitle(self.mainProfile.favoriteАnime[section].name, for: .normal)
@@ -239,8 +261,9 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
         header?.animeButton.titleLabel?.lineBreakMode = .byWordWrapping
         header?.animeButton.titleLabel?.numberOfLines = 0
         header?.animeButton.tag = section
-        
-        header?.animeImage.image = self.mainProfile.favoriteАnime[section].avatarImage
+        if self.mainProfile.favoriteАnime[section].avatarImage.pngData() != nil {
+            header?.animeImage.image = self.mainProfile.favoriteАnime[section].avatarImage
+        }
         header?.animeImage.layer.masksToBounds = true
         header?.wowNewAnime.layer.masksToBounds = true
         header?.animeSeries.text = "S: " + String(self.mainProfile.favoriteАnime[section].series)
@@ -268,7 +291,6 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
             }
             saveSector = button.tag
             self.mainProfile.favoriteАnime[button.tag].flack = true
-            self.mainProfile.favoriteАnime[button.tag].descriptionFlack = true
             tableView.reloadData()
         }
     }
@@ -301,7 +323,6 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "CamtomAnimeTableViewCell") as? CamtomAnimeTableViewCell else { return UITableViewCell() }
         cell.backgroundColor = #colorLiteral(red: 0.6000000238, green: 0.6000000238, blue: 0.6000000238, alpha: 1)
         cell.animeSeries.text = "S: " + String(self.mainProfile.favoriteАnime[indexPath.section].series)
@@ -315,20 +336,20 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
             cell.videoPlayerButton.setImage(UIImage(), for: .normal)
             cell.videoPlayerButton.isUserInteractionEnabled = false
             cell.loadingVideo.flack = false
-//            for i in 1...animeBase.count {
-//                if animeBase[i-1].name == self.mainProfile.favoriteАnime[indexPath.section].name {
-////                    if let url = NSURL(string: "https://video.sibnet.ru/shell.php?videoid=" + animeBase[i-1].seriesURL[self.mainProfile.favoriteАnime[indexPath.section].series-1])
-////                    {
-////                        let requstObj = URLRequest(url: url as URL)
-////                        cell.videoPlayer.isHidden = false
-////                        cell.videoPlayer.load(requstObj)
-////                    }
-//                }
+            
+                    if let url = NSURL(string: displayURL(url: "https://play.shikimori.org/animes/\(self.mainProfile.favoriteАnime[indexPath.section].id)/video_online/\(self.mainProfile.favoriteАnime[indexPath.section].series)"))
+       
+                    {
+                        let requstObj = URLRequest(url: url as URL)
+                        cell.videoPlayer.isHidden = false
+                        cell.videoPlayer.load(requstObj)
+                    }
+
                 if cell.videoPlayer.isLoading {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {  // Костыль с задержкой
                         cell.loadingVideo.flack = true
                     }
-//                }
+
             }
         } else {  // Отображаем заставке и кнопке
             cell.videoPlayer.isHidden = true
@@ -341,31 +362,46 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
         }
         return cell
     }
-
+    
     // MARK: - viewForFooterInSection
     // Добавляем описание аниме внизу
     
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
-        
-        let heightView = (CGFloat(Double(self.mainProfile.favoriteАnime[section].description.count)*7.32)/(tableView.frame.size.width))
-        let view = UIView(frame: CGRect(x: 0, y: 0, width: tableView.frame.size.width, height: (heightView+1)*22))
         if self.mainProfile.favoriteАnime[section].flack  == true  {
+  
+            let heightView = (CGFloat(Double(self.mainProfile.favoriteАnime[section].description.count)*7.32)/(tableView.frame.size.width))
+            let view = UIView(frame: CGRect(x: 0, y: 0, width: tableView.frame.size.width, height: (heightView+1)*22))
             
-            if self.mainProfile.favoriteАnime[section].description == "" && self.mainProfile.favoriteАnime[section].descriptionFlack == true {
-                self.loadAnimeDescription(section: section) {
+            if self.mainProfile.favoriteАnime[section].descriptionFlack == false {
+                let nameTextFile = "description_" + self.mainProfile.favoriteАnime[section].name + ".txt"
+                
+                let text = loadText(nameFile: nameTextFile)
+                if text == "" {
+                    self.loadAnimeDescription(section: section) {
+                        DispatchQueue.main.async {
+                            self.mainProfile.favoriteАnime[section].descriptionFlack = true
+                            
+                            fileSistemSaveText(nameFile: nameTextFile, text: self.mainProfile.favoriteАnime[section].description)
+                            
+                            tableView.reloadSections([section], with: .none)
+                        }
+                    }
+                } else {
                     DispatchQueue.main.async {
-                        self.mainProfile.favoriteАnime[section].descriptionFlack = false
-                        tableView.reloadSections([section], with: .none)
+                    self.mainProfile.favoriteАnime[section].descriptionFlack = true
+                    self.mainProfile.favoriteАnime[section].description = text
+                    tableView.reloadSections([section], with: .none)
                     }
                 }
             } else {
+                
                 let label = UILabel(frame: CGRect(x: 10, y: 10, width: tableView.frame.size.width-10, height: 20))
                 label.font = UIFont.systemFont(ofSize: 18)
                 label.text = "Описание"
                 label.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
                 let label2 = UILabel(frame: CGRect(x: 10, y: 30, width: tableView.frame.size.width-10, height: heightView*20))
                 label2.font = UIFont.systemFont(ofSize: 14)
-                label2.text = String(self.mainProfile.favoriteАnime[section].description)
+                label2.text = self.mainProfile.favoriteАnime[section].description
                 label2.lineBreakMode = .byWordWrapping
                 label2.numberOfLines = 0
                 label2.textColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
@@ -376,39 +412,10 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
             }
             return view
          } else {
+            let view = UIView(frame: CGRect(x: 0, y: 0, width: tableView.frame.size.width, height: 4))
             view.backgroundColor = .clear
             return view
         }
-    }
-
-//     MARK: - Получение описание аниме
-    private func loadAnimeDescription(section: Int,  completioHandler : (() ->Void)?) {
-        
-            request("https://shikimori.org/api/animes/\(self.mainProfile.favoriteАnime[section].id)",  method: .get).validate(contentType: ["application/json"]).responseJSON() { response in
-                
-                switch response.result {
-                case .success(let value):
-                    let json = JSON(value)
-                    
-                    if json["description"].stringValue != "" {
-                        self.mainProfile.favoriteАnime[section].description = json["description"].stringValue
-                    } else {
-                        self.mainProfile.favoriteАnime[section].description = "..."
-                    }
-
-                case .failure(let error):
-                    let arres = error.localizedDescription
-                    self.showAlert(massage: arres, title: "Error load Anime Description")
-                }
-                completioHandler?()
-            }
-    }
-    
-    func showAlert (massage: String, title: String) {    // Вывод ошибки если пользователь ввел неправильно данные
-        let alert = UIAlertController(title: title, message: massage, preferredStyle: .alert)
-        let action = UIAlertAction(title: "Ok", style: .default, handler: nil)
-        alert.addAction(action)
-        present(alert, animated: true, completion: nil)
     }
     
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
@@ -424,7 +431,6 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
             return 2
         }
     }
-
 
   // MARK: - Переход при нажатии на строку
 
@@ -442,9 +448,60 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
+    // MARK: - Доп действия по сдвигу
+    
+    func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+        let profileAction = UITableViewRowAction(style: .default, title: "Delete") {
+            _, indexPath in
+            self.animeList.append(АnimeList())
+            let indx = self.animeList.endIndex - 1
+            
+            self.animeList[indx].id = self.mainProfile.favoriteАnime[indexPath.section].id
+            self.animeList[indx].name = self.mainProfile.favoriteАnime[indexPath.section].name
+            self.animeList[indx].avatar = self.mainProfile.favoriteАnime[indexPath.section].avatar
+            self.animeList[indx].avatarImage = self.mainProfile.favoriteАnime[indexPath.section].avatarImage
+            self.animeList[indx].status = self.mainProfile.favoriteАnime[indexPath.section].status
+            self.animeList[indx].maxSeries = self.mainProfile.favoriteАnime[indexPath.section].maxSeries
+            
+            let namePhoto = namedConstructor(text: self.mainProfile.favoriteАnime[indexPath.section].avatar)
+            deleteImage(namePhoto: namePhoto)
+            
+            self.mainProfile.favoriteАnime.remove(at: indexPath.section)
+            //     MARK: -  Здесь будет post запрос о удалении из списка аниме
+            tableView.reloadData()
+        }
+        
+        profileAction.backgroundColor = #colorLiteral(red: 0.9372549057, green: 0.3490196168, blue: 0.1921568662, alpha: 1)
+        return [profileAction]
+    }
+    
+//     MARK: - Получение описание аниме
+    private func loadAnimeDescription(section: Int,  completioHandler : (() ->Void)?) {
+        
+        request("https://shikimori.one/api/animes/\(self.mainProfile.favoriteАnime[section].id)",  method: .get).validate(contentType: ["application/json"]).responseJSON() { response in
+            
+            switch response.result {
+            case .success(let value):
+                let json = JSON(value)
+                
+                if json["description"].stringValue != "" {
+                    
+                    self.mainProfile.favoriteАnime[section].description = json["description"].stringValue
+                } else {
+                    self.mainProfile.favoriteАnime[section].description = "..."
+                }
+                
+            case .failure(let error):
+                let arres = error.localizedDescription
+                self.showAlert(massage: arres, title: "Error load Anime Description")
+            }
+            completioHandler?()
+        }
+    }
+    
 //     MARK: - Получение скриншоты из аниме
     private func loadImageProfile(section: Int, completioHandler : (() ->Void)?) {
-        request("https://shikimori.org/api/animes/\(mainProfile.favoriteАnime[section].id)/screenshots",  method: .get).validate(contentType: ["application/json"]).responseJSON() { response in
+        request("https://shikimori.one/api/animes/\(mainProfile.favoriteАnime[section].id)/screenshots",  method: .get).validate(contentType: ["application/json"]).responseJSON() { response in
             switch response.result {
             case .success(let value):
                 let json = JSON(value)
@@ -461,32 +518,12 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
         }
     }
 
-    // MARK: - Доп действия по сдвигу
-
-    func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
-            let profileAction = UITableViewRowAction(style: .default, title: "Delete") {
-                _, indexPath in
-                self.animeList.append(АnimeList())
-                let indx = self.animeList.endIndex - 1
-                
-                self.animeList[indx].id = self.mainProfile.favoriteАnime[indexPath.section].id
-                self.animeList[indx].name = self.mainProfile.favoriteАnime[indexPath.section].name
-                self.animeList[indx].avatar = self.mainProfile.favoriteАnime[indexPath.section].avatar
-                self.animeList[indx].avatarImage = self.mainProfile.favoriteАnime[indexPath.section].avatarImage
-                self.animeList[indx].status = self.mainProfile.favoriteАnime[indexPath.section].status
-                self.animeList[indx].maxSeries = self.mainProfile.favoriteАnime[indexPath.section].maxSeries
-                
-                let namePhoto = namedConstructor(text: self.mainProfile.favoriteАnime[indexPath.section].avatar)
-                deleteImage(namePhoto: namePhoto)
-                
-                self.mainProfile.favoriteАnime.remove(at: indexPath.section)
-//     MARK: -  Здесь будет post запрос о удалении из списка аниме
-                tableView.reloadData()
-        }
-
-            profileAction.backgroundColor = #colorLiteral(red: 0.9372549057, green: 0.3490196168, blue: 0.1921568662, alpha: 1)
-            return [profileAction]
-        }
+    private func showAlert (massage: String, title: String) {    // Вывод ошибки если пользователь ввел неправильно данные
+        let alert = UIAlertController(title: title, message: massage, preferredStyle: .alert)
+        let action = UIAlertAction(title: "Ok", style: .default, handler: nil)
+        alert.addAction(action)
+        present(alert, animated: true, completion: nil)
+    }
     
 // MARK: - Actions stepper
     @IBAction func animeStepper(_ sender: HSUnderLineStepper) {
@@ -521,7 +558,7 @@ extension TableViewOneController: UINavigationControllerDelegate {
         if operation == .push {
             return animatedTransitionTwo()
         } else if operation == .pop {
-            mainProfile.favoriteАnime[transportLine].close = true
+            clearMemory()
             return animatedTransitionTwoDismissed()
         } else {
             return nil
