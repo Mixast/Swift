@@ -1,6 +1,8 @@
 import UIKit
+import RealmSwift
 
 class TableViewTwoController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate {
+    
     private var searching = false
     private var filteredList = [Friend]()
     let friendProfile = FriendProfile.instance
@@ -41,6 +43,22 @@ class TableViewTwoController: UIViewController, UITableViewDelegate, UITableView
                     if let data = try? Data(contentsOf: imageURL! as URL) {
                         self.mainProfile.friends[i-1].avatarData = data
                         fileSistemSave(namePhoto: namePhoto, data: data)
+                        
+                        guard let realm =  try? Realm() else {
+                            print("Error Realm")
+                            return
+                        }
+                        
+                        let object = realm.objects(RealmBase.self)
+                        guard let base = Optional(object[transportRealmIndex]) else {
+                            return
+                        }
+                        if base.friends[i-1].avatarData == Data() {
+                            
+                            try! realm.write {
+                                base.friends[i-1].avatarData = data
+                            }
+                        }
                     }
                 } else {
                     self.mainProfile.friends[i-1].avatarData = loadImage(namePhoto: namePhoto)
