@@ -7,6 +7,9 @@ import Kanna
 import RealmSwift
 
 class TableViewOneController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+    var changesToken: NotificationToken?
+
+    
     private var transportLine = 0
     private var hop = 10
     let interactive = CustomInteractiveTransition()
@@ -17,6 +20,38 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        guard let realm =  try? Realm() else {
+            print("Error Realm")
+            return
+        }
+        let object = realm.objects(RealmBase.self)
+        guard let base = Optional(object[transportRealmIndex]) else {
+            return
+        }
+
+        // Ловим изменение в реалм
+        changesToken = base.favoriteАnime.observe { changes in
+            switch changes {
+            case .update( _, deletions: let deletions, insertions: let insertions, modifications: let modifications):
+               
+                self.tableView.performBatchUpdates({
+                    if insertions != [] {
+                        self.tableView.insertSections(insertions.map({ IndexSet(integer: $0) })[0], with: .none)
+                    } else if deletions != [] {
+                        self.tableView.deleteSections(deletions.map({ IndexSet(integer: $0) })[0], with: .none)
+                    } else  if modifications != [] {
+                    self.tableView.reloadSections(modifications.map({ IndexSet(integer: $0) })[0], with: .none)
+                    }
+                }, completion: { _ in
+                    print("updated")
+                })
+                
+            case .error(let error): print(error)
+            default: return
+            }
+        }
+
         
 //     MARK: - Параллельно прогружаем картинки аниме
         DispatchQueue.global().async {
@@ -31,9 +66,25 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
                         if let data = try? Data(contentsOf: imageURL! as URL){
                             DispatchQueue.main.async { [weak self] in
                                 guard let self = self else { return }
+                                
                                 self.mainProfile.favoriteАnime[i-1].avatarImageData = data
                                 fileSistemSave(namePhoto: namePhoto, data: data)
-                                self.tableView.reloadSections([i-1], with: .none)
+
+                                guard let realm =  try? Realm() else {
+                                    print("Error Realm")
+                                    return
+                                }
+                                
+                                let object = realm.objects(RealmBase.self)
+                                guard let base = Optional(object[transportRealmIndex]) else {
+                                    return
+                                }
+                                if base.favoriteАnime[i-1].avatarImageData == Data() {
+                                    
+                                    try! realm.write {
+                                        base.favoriteАnime[i-1].avatarImageData = data
+                                    }
+                                }
                             }
                         }
                     }
@@ -46,7 +97,6 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
                     }
                 }
             }
-
         }
         
         navigationItem.title = "Favorite anime"  // Имя поля
@@ -218,7 +268,6 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
                         self.mainProfile.favoriteАnime[indx].status = self.animeList[i-1].status
                         self.mainProfile.favoriteАnime[indx].maxSeries = self.animeList[i-1].maxSeries
 
-
                         if self.animeList[i-1].avatarImageData == Data() {
                             let imageURL = NSURL(string: "https://shikimori.one" + self.animeList[i-1].avatar)
                             let queue = DispatchQueue.global(qos: .utility)
@@ -236,8 +285,34 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
                             self.mainProfile.favoriteАnime[indx].avatarImageData = self.animeList[i-1].avatarImageData
                             self.animeList[i-1].flackOne = true
                         }
+                        
 
-                        self.tableView.reloadData()
+                            guard let realm =  try? Realm() else {
+                                print("Error Realm")
+                                return
+                            }
+
+                            let object = realm.objects(RealmBase.self)
+                            guard let base = Optional(object[transportRealmIndex]) else {
+                                return
+                            }
+
+                            let anime = FavoriteАnime()
+                            anime.id = self.animeList[i-1].id
+                            anime.name = self.animeList[i-1].name
+                            anime.avatar = self.animeList[i-1].avatar
+                            anime.avatarImageData = self.animeList[i-1].avatarImageData
+                            anime.status = self.animeList[i-1].status
+                            anime.maxSeries = self.animeList[i-1].maxSeries
+                        
+                            try! realm.write {
+                                base.favoriteАnime.append(anime)
+                            }
+                        
+                        
+                        // здесь должен быть post запрос для добавления в список
+                        
+                        self.animeList.remove(at: i-1)
                     })
                     addAnime.setValue(imageTitle?.withRenderingMode(.alwaysOriginal), forKey: "image")
                     optionMenu.addAction(addAnime)
@@ -269,9 +344,6 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
         header?.animeButton.titleLabel?.lineBreakMode = .byWordWrapping
         header?.animeButton.titleLabel?.numberOfLines = 0
         header?.animeButton.tag = section
-        if self.mainProfile.favoriteАnime[section].avatarImageData != Data() {
-            header?.animeImage.image = UIImage(data: self.mainProfile.favoriteАnime[section].avatarImageData)
-        }
         header?.animeImage.layer.masksToBounds = true
         header?.wowNewAnime.layer.masksToBounds = true
         header?.animeSeries.text = "S: " + String(self.mainProfile.favoriteАnime[section].series)
@@ -281,7 +353,10 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
         } else {
             header?.wowNewAnime.image = #imageLiteral(resourceName: "icons8-vnim-50")
         }
-
+        
+        if self.mainProfile.favoriteАnime[section].avatarImageData != Data() {
+            header?.animeImage.image = UIImage(data: self.mainProfile.favoriteАnime[section].avatarImageData)
+        }
 
         return header
     }
@@ -382,7 +457,7 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
             let heightView = (CGFloat(Double(self.mainProfile.favoriteАnime[section].descriptionInfo.count)*7.32)/(tableView.frame.size.width))
             let view = UIView(frame: CGRect(x: 0, y: 0, width: tableView.frame.size.width, height: (heightView+1)*22))
             
-            if self.mainProfile.favoriteАnime[section].descriptionFlack == false {
+            if self.mainProfile.favoriteАnime[section].descriptionFlack == false || self.mainProfile.favoriteАnime[section].descriptionInfo == "" {
                 let nameTextFile = "description_" + self.mainProfile.favoriteАnime[section].name + ".txt"
                 
                 let text = loadText(nameFile: nameTextFile)
@@ -393,7 +468,22 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
                             
                             fileSistemSaveText(nameFile: nameTextFile, text: self.mainProfile.favoriteАnime[section].descriptionInfo)
                             
-                            tableView.reloadSections([section], with: .none)
+                            guard let realm =  try? Realm() else {
+                                print("Error Realm")
+                                return
+                            }
+                            
+                            let object = realm.objects(RealmBase.self)
+                            guard let base = Optional(object[transportRealmIndex]) else {
+                                return
+                            }
+                            if base.favoriteАnime[section].descriptionInfo == "" {
+                                
+                                try! realm.write {
+                                    base.favoriteАnime[section].descriptionInfo = self.mainProfile.favoriteАnime[section].descriptionInfo
+                                    base.favoriteАnime[section].descriptionFlack = true
+                                }
+                            }
                         }
                     }
                 } else {
@@ -445,20 +535,29 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
   // MARK: - Переход при нажатии на строку
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-
-        loadImageProfile(section: indexPath.section) { // Составляем базу картинок
-            DispatchQueue.main.async {
-                let detailVC = self.storyboard?.instantiateViewController(withIdentifier: "TabOneCollectionViewController") as! TabOneCollectionViewController
-                detailVC.transportLine = indexPath.section
-                detailVC.profile = "mainProfile"
-                self.interactive.viewController = detailVC
-                self.navigationController?.delegate = self
-                self.navigationController?.pushViewController(detailVC, animated: true)
+        
+        if mainProfile.favoriteАnime[indexPath.section].colectionImage.count == 0 {
+            loadImageProfile(section: indexPath.section) { // Составляем базу картинок
+                DispatchQueue.main.async {
+                    let detailVC = self.storyboard?.instantiateViewController(withIdentifier: "TabOneCollectionViewController") as! TabOneCollectionViewController
+                    detailVC.transportLine = indexPath.section
+                    detailVC.profile = "mainProfile"
+                    self.interactive.viewController = detailVC
+                    self.navigationController?.delegate = self
+                    self.navigationController?.pushViewController(detailVC, animated: true)
+                }
             }
+        } else {
+            let detailVC = self.storyboard?.instantiateViewController(withIdentifier: "TabOneCollectionViewController") as! TabOneCollectionViewController
+            detailVC.transportLine = indexPath.section
+            detailVC.profile = "mainProfile"
+            self.interactive.viewController = detailVC
+            self.navigationController?.delegate = self
+            self.navigationController?.pushViewController(detailVC, animated: true)
         }
     }
     
-    // MARK: - Доп действия по сдвигу
+    // MARK: - Доп действия по сдвигу (УДАЛЕНИЕ)
     
     func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
         let profileAction = UITableViewRowAction(style: .default, title: "Delete") {
@@ -477,8 +576,28 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
             deleteImage(namePhoto: namePhoto)
             
             self.mainProfile.favoriteАnime.remove(at: indexPath.section)
+//             Пытаюсь в удаление из realm
+            DispatchQueue.global().async {
+            
+                guard let realm =  try? Realm() else {
+                    print("Error Realm")
+                    return
+                }
+                
+                let object = realm.objects(RealmBase.self)
+                guard let base = Optional(object[transportRealmIndex]) else {
+                    return
+                }
+                
+                if base.favoriteАnime.count >= indexPath.section {
+                    try! realm.write {
+                        realm.delete(base.favoriteАnime[indexPath.section])
+                    }
+                }
+            }
+        
             //     MARK: -  Здесь будет post запрос о удалении из списка аниме
-            tableView.reloadData()
+
         }
         
         profileAction.backgroundColor = #colorLiteral(red: 0.9372549057, green: 0.3490196168, blue: 0.1921568662, alpha: 1)
@@ -512,13 +631,33 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
 //     MARK: - Получение скриншоты из аниме
     private func loadImageProfile(section: Int, completioHandler : (() ->Void)?) {
         request("https://shikimori.one/api/animes/\(mainProfile.favoriteАnime[section].id)/screenshots",  method: .get).validate(contentType: ["application/json"]).responseJSON() { response in
+
             switch response.result {
             case .success(let value):
                 let json = JSON(value)
                 self.mainProfile.favoriteАnime[section].colectionImage.removeAll()
                 for (_, subJson):(String, JSON) in json[] {
-                    self.mainProfile.favoriteАnime[section].colectionImage.append(subJson["original"].stringValue)
+                    self.mainProfile.favoriteАnime[section].colectionImage.append(subJson["preview"].stringValue)
                     self.mainProfile.favoriteАnime[section].colectionImageData.append(Data())
+
+                    DispatchQueue.global().async {
+                    
+                        guard let realm =  try? Realm() else {
+                            print("Error Realm")
+                            return
+                        }
+                        
+                        let object = realm.objects(RealmBase.self)
+                        guard let base = Optional(object[transportRealmIndex]) else {
+                            return
+                        }
+                        
+                        try! realm.write {
+                            base.favoriteАnime[section].colectionImage.append(subJson["preview"].stringValue)
+                            base.favoriteАnime[section].colectionImageData.append(Data())
+                            
+                        }
+                    }
                 }
             case .failure(let error):
                 let arres = error.localizedDescription
