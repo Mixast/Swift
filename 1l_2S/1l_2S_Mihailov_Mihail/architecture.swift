@@ -3,6 +3,8 @@ import RNCryptor
 import WebKit
 import Kanna
 import RealmSwift
+import Alamofire
+import SwiftyJSON
 
 struct Keys { // Ключевые слова для keychain
     static let chek = "chek"
@@ -36,25 +38,6 @@ struct Friend { // Структура Friend
     }
 }
 
-struct News { // Структура News
-    var id: Int
-    var name: String
-    var news: String
-    var likeMetr: Int
-    var likeStatus: Bool
-    var flack: Bool
-    var image: String
-    init() {
-        self.id = 0
-        self.name = ""
-        self.news = ""
-        self.likeMetr = 0
-        self.flack = false
-        self.likeStatus = true
-        self.image = ""
-    }
-}
-
 struct Аnime { // Структура Аnime
     var close: Bool
     var flack: Bool
@@ -68,6 +51,7 @@ struct Аnime { // Структура Аnime
     var maxSeries: Int
     var colectionImage: [String]
     var colectionImageData: [Data]
+    var colectionUrl: [URL]
     var descriptionInfo: String
     init() {
         self.close = false
@@ -83,6 +67,7 @@ struct Аnime { // Структура Аnime
         self.status = ""
         self.colectionImage = []
         self.colectionImageData = []
+        self.colectionUrl = []
     }
 }
 
@@ -95,6 +80,7 @@ struct АnimeList { // Структура АnimeList
     var avatarImageData: Data
     var status: String
     var maxSeries: Int
+    
     init() {
         self.flackOne = false
         self.flackTwo = false
@@ -125,7 +111,6 @@ struct АnimeFriend { // Структура Аnime friend
         self.colectionImageData = []
     }
 }
-
 
 struct Profile {         // Структура для общей базы
     var id: Int
@@ -160,42 +145,87 @@ struct Razmermer {   // Структура для размеров ячейки 
     }
 }
 
-var likeBase = [News]() // База новосте
-
 func fillingLikeBase(completioHandler : (() ->Void)?) {
-    var news = 0
-    likeBase.removeAll()
-    likeBase.append(News())
-    likeBase[news].id = news
-    likeBase[news].image = "news1"
-    likeBase[news].name = "Анонсировано аниме Phantasy Star Online 2: Episode Oracle"
-    likeBase[news].news = "В воскресенье на мероприятии Phantasy Star Kanshasai 2019 Sega анонсировала новое аниме, основанное на серии игр Phantasy Star Online 2. Под названием «Phantasy Star Online 2: Episode Oracle» в аниме будет рассказано о первых трех эпизодах игры и своя оригинальная история. Аниме выйдет в этом году."
-    news+=1
-    likeBase.append(News())
-    likeBase[news].id = news
-    likeBase[news].image = "news2"
-    likeBase[news].name = "Первые подробности о грядущей аниме-адаптации «Mairimashita! Iruma-kun»."
-    likeBase[news].news = "В каждой семье случаются проблемы, в том числе финансовые, и решать их приходится по-разному. Вот только иногда принимаемые решения оказываются, мягко говоря, экстремальными. Как раз так и обстояли дела в семье школьника Ирумы Сузуки, когда выяснилось, что родители решили продать его дьяволу. И не так уж сильно они нуждались в деньгах, просто безалаберным родителям Сузуки захотелось лёгкой жизни. И вот Ирума глазом моргнуть не успел, а он уже в мире демонов, и демон, выкупивший его у родителей, умоляет его стать ему внуком! В общем, это история о том, что и в аду может быть довольно весело!"
-    news+=1
-    likeBase.append(News())
-    likeBase[news].id = news
-    likeBase[news].image = "news3"
-    likeBase[news].name = "Постер и трейлер фильма Kimi to, Nami ni Noretara"
-    likeBase[news].news = "Поступив в университет, Хинако переезжает в прибрежный городок. Она очень любит сёрфинг и на волнах чувствует себя уверенно, однако неопределённость будущего всё ещё беспокоит её. Когда разбушевавшийся пожар сеет хаос в городке, Хинако знакомится с молодым пожарным Минато. Пока они занимаются сёрфингом и проводят много времени вместе, девушка начинает чувствовать, что её тянет к кому-то вроде Минато, кто посвятил свою жизнь помощи другим. В свою очередь Хинако тоже занимает особое место в сердце юноши."
-    news+=1
-    likeBase.append(News())
-    likeBase[news].id = news
-    likeBase[news].image = "news4"
-    likeBase[news].name = "На Netflix появилась страница сериала по мотивам One Piece"
-    likeBase[news].news = "О подготовке игрового сериала по One Piece объявили летом 2017 года, когда оригинальной манге исполнилось 20 лет. Согласно синопсису на Netflix, сюжет грядущей адаптации совпадает с первоисточником и расскажет о приключениях пирата Манки Д. Луффи и его команды в поисках таинственного сокровища."
-    news+=1
-    likeBase.append(News())
-    likeBase[news].id = news
-    likeBase[news].image = "news5"
-    likeBase[news].name = "Манга Totsukuni no Shoujo («Девочка из Чужеземья») получит OAD"
-    likeBase[news].news = "«Эта история полна печали. С этого момента, давайте окунёмся в неторопливую и прекрасную историю, что произошла давным давно». Шива, маленькая девочка, любящая прогуляться по округе, живёт в пустой деревне со своим стражем, монстровидным джентльменом. Он запрещает ей выходить за пределы деревни, иначе она может быть проклята. Но Шива очень любопытна и жаждет внешнего мира. В чем же заключается проклятие?"
-    news+=1
-    completioHandler?()
+    let news = NewsAll.instance
+    
+    let url = "https://www.anilibria.tv/public/api/index.php"
+    let parameters : [String: String] = [ "query" : "schedule" ,
+                                          "filter" : "id,torrents,playlist,favorite,moon,blockedInfo" ,
+                                          "rm" : "true"]
+    
+    request(url,  method: .post, parameters: parameters).validate(contentType: ["text/html"]).responseJSON() { response in
+        
+        switch response.result {
+        case .success(let value):
+            let json = JSON(value)
+
+                news.news.removeAll()
+                for (i, subJson):(String, JSON) in json["data"] {
+                    
+                    guard let indx = Int(i) else {
+                        return
+                    }
+                    news.news.append(News())
+                    news.news[indx].day = subJson["day"].intValue
+                    
+                    for (m, subTwoJson):(String, JSON) in subJson["items"] {
+                        guard let indxTwo = Int(m) else {
+                            return
+                        }
+                        news.news[indx].arrayNews.append(InfoNews())
+                        news.news[indx].arrayNews[indxTwo].description = subTwoJson["description"].stringValue
+                        news.news[indx].arrayNews[indxTwo].id = subTwoJson["id"].intValue
+                        news.news[indx].arrayNews[indxTwo].name = subTwoJson["names"][0].stringValue
+                        news.news[indx].arrayNews[indxTwo].poster = subTwoJson["poster"].stringValue
+                        news.news[indx].arrayNews[indxTwo].series = subTwoJson["series"].stringValue
+                        
+                    }
+                    
+                }
+
+        case .failure(let error):
+            let arres = error.localizedDescription
+            print(arres)
+            
+        }
+        completioHandler?()
+    }
+}
+
+struct News { // Структура News
+    var day: Int
+    var arrayNews: [InfoNews]
+    init() {
+
+        self.day = 1
+        self.arrayNews = []
+    }
+}
+
+struct InfoNews {
+    var id: Int
+    var name: String
+    var series: String
+    var description: String
+    var flack: Bool
+    var poster: String
+    var posterData: Data
+    init() {
+        self.id = 0
+        self.name = ""
+        self.series = ""
+        self.description = ""
+        self.flack = true
+        self.poster = ""
+        self.posterData = Data()
+    }
+}
+
+class NewsAll: Any { // Класс News
+    var news = [News()]
+
+    private init() {}
+    static let instance = NewsAll()
 }
 
 class MainProfile: Any {         // Структура профиля пользователя Singleton
@@ -325,42 +355,42 @@ func clearMemory() {
 }
 
 // Парсим сайт
-func displayURL(url: String) -> String {
-    let myURLString = url
-    guard let myURL = URL(string: myURLString) else {
-        print("Error: \(myURLString) doesn't seem to be a valid URL")
-        return ""
-    }
-    
-    do {
-        let myHTMLString = try String(contentsOf: myURL, encoding: .ascii)
-        if let doc = try? HTML(html: myHTMLString, encoding: .utf8) {
-            // Search for nodes by CSS
-            
-            for link in doc.css("body") {
-                if link["class"] == "p-anime_videos p-anime_videos-index p-db_entries p-db_entries-index p-animes p-animes-index x1200" {
-                    let l = link
-                    for link in l.css("div") {
-                        if link["class"] == "video-link" {
-                            let k = link
-                            for link in k.css("a") {
-                                guard let link = link["href"] else {
-                                    return ""
-                                }
-                                return link
-                            }
-                        }
-                    }
-                }
-                
-            }
-            
-        }
-    } catch let error {
-        print("Error: \(error)")
-    }
-    return ""
-}
+//func displayURL(url: String) -> String {
+//    let myURLString = url
+//    guard let myURL = URL(string: myURLString) else {
+//        print("Error: \(myURLString) doesn't seem to be a valid URL")
+//        return ""
+//    }
+//
+//    do {
+//        let myHTMLString = try String(contentsOf: myURL, encoding: .ascii)
+//        if let doc = try? HTML(html: myHTMLString, encoding: .utf8) {
+//            // Search for nodes by CSS
+//
+//            for link in doc.css("body") {
+//                if link["class"] == "p-anime_videos p-anime_videos-index p-db_entries p-db_entries-index p-animes p-animes-index x1200" {
+//                    let l = link
+//                    for link in l.css("div") {
+//                        if link["class"] == "video-link" {
+//                            let k = link
+//                            for link in k.css("a") {
+//                                guard let link = link["href"] else {
+//                                    return ""
+//                                }
+//                                return link
+//                            }
+//                        }
+//                    }
+//                }
+//
+//            }
+//
+//        }
+//    } catch let error {
+//        print("Error: \(error)")
+//    }
+//    return ""
+//}
 
 //  Получаем день недели
 func getDayOfWeek(_ today:String) -> String? {
@@ -381,5 +411,93 @@ func getDayOfWeek(_ today:String) -> String? {
     default: return ""
     }
 }
+func getDay() -> Int {
+    let date = Date()
+    let formatter = DateFormatter()
+    formatter.dateFormat = "dd.MM.yyyy"
+    let result = formatter.string(from: date)
+    
+    guard let todayDate = formatter.date(from: result) else { return 0}
+    let myCalendar = Calendar(identifier: .gregorian)
+    let weekDay = myCalendar.component(.weekday, from: todayDate) - 2
+    return weekDay
+}
 
 
+// Получение ссылки на видео файл
+
+func displayURL(name: String, completioHandler : (() ->Void)?) {
+    let url = "https://www.anilibria.tv/public/api/index.php"
+    let parameters : [String: String] = [ "query" : "search" ,
+                                          "search" : name,
+                                          "filter" : "id,code,names,poster"]
+   
+    request(url,  method: .post, parameters: parameters).validate(contentType: ["text/html"]).responseJSON() { response in
+        
+        switch response.result {
+        case .success(let value):
+            let json = JSON(value)
+            var idElement = String()
+            idElement = json["data"][0]["id"].stringValue
+            
+            fillingJson(id: idElement, name: name){
+                DispatchQueue.main.async {
+                    completioHandler?()
+                }
+            }
+            
+        case .failure(let error):
+            let arres = error.localizedDescription
+            print(arres)
+            completioHandler?()
+        }
+    }
+
+   
+}
+
+func fillingJson(id: String, name: String, completioHandler : (() ->Void)?) {
+    let mainProfile = MainProfile.instance
+    var array = [Int: String]()
+    let url = "https://www.anilibria.tv/public/api/index.php"
+    let parameters : [String: String] = [ "query" : "release" ,
+                                          "id" : id,
+                                          "filter" : "data,description,torrents,type,code,voices,genres,status,year,announce,day,favorite,blockedInfo,error,poster,last,names,series",
+                                          "rm" : "true"]
+    request(url,  method: .post, parameters: parameters).validate(contentType: ["text/html"]).responseJSON() { response in
+        
+        switch response.result {
+        case .success(let value):
+            let json = JSON(value)
+            
+            for (_, subJson):(String, JSON) in json["data"]["playlist"] {
+                array.updateValue(subJson["srcHd"].stringValue, forKey: subJson["id"].intValue)
+            }
+            
+            for m in 1...mainProfile.favoriteАnime.count {
+                if mainProfile.favoriteАnime[m-1].name == name {
+                    mainProfile.favoriteАnime[m-1].colectionUrl.removeAll()
+                    if array.count != 0 {
+                        for i in 1...array.count {
+                            guard let urlString = array[i] else {
+                                return
+                            }
+                            guard let urlStr = urlString.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed) else {
+                                return
+                            }
+                            guard let url = URL(string: urlStr) else {
+                                return
+                            }
+                            mainProfile.favoriteАnime[m-1].colectionUrl.append(url)
+                        }
+                    }
+                }
+            }
+            completioHandler?()
+        case .failure(let error):
+            let arres = error.localizedDescription
+            print(arres)
+            completioHandler?()
+        }
+    }
+}
