@@ -35,7 +35,6 @@ class FavoriteАnime: Object {
     @objc dynamic var descriptionInfo = ""
     var colectionImage = List<String>()
     var colectionImageData = List<Data>()
-    
 }
 
 class Friends: Object {
