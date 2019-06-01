@@ -55,6 +55,9 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
                     for i in 1...base.favoriteАnime[self.transportLine].colectionImageData.count {
                         self.mainProfile.favoriteАnime[self.transportLine].colectionImageData[i-1] = base.favoriteАnime[self.transportLine].colectionImageData[i-1]
                     }
+                    DispatchQueue.main.async {
+                        self.collectionView.reloadData()
+                    }
                 }
 
             }
@@ -377,3 +380,6 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
     }
     
 }
+
+
+
