@@ -81,13 +81,6 @@ class SelectDayControl: UIControl {
             self.selectedDay = day
             self.buttons[count].isSelected = day == self.selectedDay
             
-            for i in 1...buttons.count {
-                if buttons[i-1].title(for: .normal) == Day.friday.title {
-                    print(buttons[i-1].title(for: .normal))
-                    print(Day.friday.title)
-                }
-            }
-            
         }
     }
     

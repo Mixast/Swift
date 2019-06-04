@@ -39,7 +39,7 @@ import UIKit
             let sizeWidth = self.frame.size.width
             let sizeHeight = self.frame.size.height
             
-            UIView.animate(withDuration: 2,
+            UIView.animate(withDuration: 0.3,
                            delay: 0.2,
                            usingSpringWithDamping: 0.4,
                            initialSpringVelocity: 4,
@@ -49,8 +49,8 @@ import UIKit
                             
                             
             }, completion: { (_) in
-                UIView.animate(withDuration: 1,
-                               delay: 0,
+                UIView.animate(withDuration: 0.2,
+                               delay: 0.1,
                                usingSpringWithDamping: 0.8,
                                initialSpringVelocity: 4,
                                options: [],

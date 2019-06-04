@@ -79,6 +79,9 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
                                 guard let base = Optional(object[transportRealmIndex]) else {
                                     return
                                 }
+                                if base.favoriteАnime.count < i-1 {
+                                    return
+                                }
                                 if base.favoriteАnime[i-1].avatarImageData == Data() {
                                     
                                     try! realm.write {
@@ -414,27 +417,52 @@ class TableViewOneController: UIViewController, UITableViewDelegate, UITableView
         cell.videoPlayerButton.tag = indexPath.section
         
         
-        if cell.videoPlayerButton.statusPlay == (indexPath.section, true) {     // Подключаем видео плеер если нажапа кнопка
+        if cell.videoPlayerButton.statusPlay == (indexPath.section, true) {     // Подключаем видео плеер если нажата кнопка
             cell.videoPlayerImage.image = UIImage()
             cell.videoPlayerButton.setImage(UIImage(), for: .normal)
             cell.videoPlayerButton.isUserInteractionEnabled = false
             cell.loadingVideo.flack = false
             
-                    if let url = NSURL(string: displayURL(url: "https://play.shikimori.org/animes/\(self.mainProfile.favoriteАnime[indexPath.section].id)/video_online/\(self.mainProfile.favoriteАnime[indexPath.section].series)"))
-//
-                    {
-//                        let url = NSURL(string: "https://animego.org/anime/mozhet-ya-vstrechu-tebya-v-podzemele-mech-oratorii-304" )
-                        let requstObj = URLRequest(url: url as URL)
+            if mainProfile.favoriteАnime[indexPath.section].colectionUrl.count == 0 {
+                displayURL(name: mainProfile.favoriteАnime[indexPath.section].name) {
+                    DispatchQueue.main.async {
+                        guard var url = URL(string: "https://www.anilibria.tv/img/404.png") else {
+                            return
+                        }
+                        if self.mainProfile.favoriteАnime[indexPath.section].colectionUrl.count == 0 {
+                            self.mainProfile.favoriteАnime[indexPath.section].colectionUrl.removeAll()
+                            for _ in 1...self.mainProfile.favoriteАnime[indexPath.section].maxSeries {
+                                self.mainProfile.favoriteАnime[indexPath.section].colectionUrl.append(url)
+                            }
+                        }
+                        
+                        if self.mainProfile.favoriteАnime[indexPath.section].colectionUrl.count < self.mainProfile.favoriteАnime[indexPath.section].maxSeries {
+                            for _ in 1...self.mainProfile.favoriteАnime[indexPath.section].maxSeries - self.mainProfile.favoriteАnime[indexPath.section].colectionUrl.count {
+                                self.mainProfile.favoriteАnime[indexPath.section].colectionUrl.append(url)
+                            }
+                        }
+                        
+                        
+                        if self.mainProfile.favoriteАnime[indexPath.section].series != 0 {
+                        let series = self.mainProfile.favoriteАnime[indexPath.section].series-1
+                            url = self.mainProfile.favoriteАnime[indexPath.section].colectionUrl[series]
+                        }
+                        
+                        let requstObj = URLRequest(url: url)
+                        cell.loadingVideo.flack = true
                         cell.videoPlayer.isHidden = false
                         cell.videoPlayer.configuration.allowsInlineMediaPlayback = true
                         cell.videoPlayer.load(requstObj)
                     }
-
-                if cell.videoPlayer.isLoading {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {  // Костыль с задержкой
-                        cell.loadingVideo.flack = true
-                    }
-
+                }
+            } else {
+                let series = mainProfile.favoriteАnime[indexPath.section].series-1
+                let url = mainProfile.favoriteАnime[indexPath.section].colectionUrl[series]
+                let requstObj = URLRequest(url: url)
+                cell.loadingVideo.flack = true
+                cell.videoPlayer.isHidden = false
+                cell.videoPlayer.configuration.allowsInlineMediaPlayback = true
+                cell.videoPlayer.load(requstObj)
             }
         } else {  // Отображаем заставке и кнопке
             cell.videoPlayer.isHidden = true

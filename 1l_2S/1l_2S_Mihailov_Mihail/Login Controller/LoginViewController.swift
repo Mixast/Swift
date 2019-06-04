@@ -82,6 +82,7 @@ class LoginViewController: UIViewController, WKNavigationDelegate {
                         return
                     }
                     let object = realm.objects(RealmBase.self)
+
                     if object.count != 0 {
                         for i in 1...object.count {
                             let base: RealmBase = realmLoad(index: i-1)
@@ -194,10 +195,26 @@ class LoginViewController: UIViewController, WKNavigationDelegate {
                         DispatchQueue.main.async {
                             self.loadAnime {
                                 DispatchQueue.main.async {
-                                    
                                     self.loadFriends {
                                         DispatchQueue.main.async {
                                             UserDefaults.standard.set(false, forKey: Keys.chek)
+                                            
+                                            guard let realm =  try? Realm() else {
+                                                print("Error Realm")
+                                                return
+                                            }
+                                            let object = realm.objects(RealmBase.self)
+                                            for i in 1...object.count {
+                                                guard let base = Optional(object[i-1]) else {
+                                                    return
+                                                }
+                                                if base.id == self.mainProfile.id {
+                                                    self.performSegue(withIdentifier: "goToInfo", sender: self)
+                                                    return
+                                                }
+                                            }
+                                            
+                                            realmSave()
                                             self.performSegue(withIdentifier: "goToInfo", sender: self)
                                             
                                         }
