@@ -2,6 +2,7 @@ import Foundation
 import RNCryptor
 import WebKit
 import Kanna
+import RealmSwift
 
 struct Keys { // Ключевые слова для keychain
     static let chek = "chek"
@@ -26,12 +27,12 @@ struct Friend { // Структура Friend
     var id: Int
     var name: String
     var avatarName: String
-    var avatar: UIImage
+    var avatarData: Data
     init() {
         self.id = 0
         self.name = ""
         self.avatarName = ""
-        self.avatar = UIImage()
+        self.avatarData = Data()
     }
 }
 
@@ -61,13 +62,13 @@ struct Аnime { // Структура Аnime
     var id: Int
     var name: String
     var avatar: String
-    var avatarImage: UIImage
+    var avatarImageData: Data
     var status: String
     var series: Int
     var maxSeries: Int
     var colectionImage: [String]
-    var colectionImG: [UIImage]
-    var description: String
+    var colectionImageData: [Data]
+    var descriptionInfo: String
     init() {
         self.close = false
         self.id = 0
@@ -75,13 +76,13 @@ struct Аnime { // Структура Аnime
         self.series = 1
         self.maxSeries = 1
         self.flack = false
-        self.description = ""
+        self.descriptionInfo = ""
         self.descriptionFlack = false
         self.avatar = ""
-        self.avatarImage = UIImage()
+        self.avatarImageData = Data()
         self.status = ""
         self.colectionImage = []
-        self.colectionImG = []
+        self.colectionImageData = []
     }
 }
 
@@ -91,7 +92,7 @@ struct АnimeList { // Структура АnimeList
     var id: Int
     var name: String
     var avatar: String
-    var avatarImage: UIImage
+    var avatarImageData: Data
     var status: String
     var maxSeries: Int
     init() {
@@ -101,7 +102,7 @@ struct АnimeList { // Структура АnimeList
         self.name = ""
         self.maxSeries = 1
         self.avatar = ""
-        self.avatarImage = UIImage()
+        self.avatarImageData = Data()
         self.status = ""
     }
 }
@@ -113,7 +114,7 @@ struct АnimeFriend { // Структура Аnime friend
     var series: Int
     var avatar: String
     var colectionImage: [String]
-    var colectionImG: [UIImage]
+    var colectionImageData: [Data]
     init() {
         self.close = false
         self.id = 0
@@ -121,7 +122,7 @@ struct АnimeFriend { // Структура Аnime friend
         self.series = 1
         self.avatar = ""
         self.colectionImage = []
-        self.colectionImG = []
+        self.colectionImageData = []
     }
 }
 
@@ -213,9 +214,8 @@ class FriendProfile: Any {         // Структура профиля друг
     var id = 0
     var birthday = ""
     var avatarName = ""
-    var avatar = UIImage()
+    var avatarData = Data()
     var favoriteАnime = [АnimeFriend]()
-    
     var friends = [Friend]()
     private init() {}
     static let instance = FriendProfile()
@@ -234,10 +234,8 @@ func getDocumentsDir() -> URL {  // Получение дирректории
     return FileManager.default.urls(for: FileManager.SearchPathDirectory.documentDirectory, in: .userDomainMask)[0]
 }
 
-func fileSistemSave(namePhoto: String, img: UIImage) {  // Сохранение картинки
+func fileSistemSave(namePhoto: String, data: Data) {  // Сохранение картинки
     let fileUrl = getDocumentsDir().appendingPathComponent(namePhoto)
-    
-    guard let data = img.pngData() else { return }
     
     do {
         try data.write(to: fileUrl)
@@ -245,7 +243,6 @@ func fileSistemSave(namePhoto: String, img: UIImage) {  // Сохранение 
         print(error)
         return
     }
-    print("Image saved")
 }
 
 func fileSistemSaveText(nameFile: String, text: String) {  // Сохранение текста
@@ -258,8 +255,6 @@ func fileSistemSaveText(nameFile: String, text: String) {  // Сохранени
         print(error)
         return
     }
-    
-    print("Text saved")
 }
 
 func loadText(nameFile: String) -> String {  // Чтение текста
@@ -275,19 +270,15 @@ func loadText(nameFile: String) -> String {  // Чтение текста
     }
 }
 
-func loadImage(namePhoto: String) -> UIImage {  // Чтение картинки
+func loadImage(namePhoto: String) -> Data {  // Чтение картинки
     let fileUrl = getDocumentsDir().appendingPathComponent(namePhoto)
     
     do {
         let imageData = try Data(contentsOf: fileUrl)
-        
-        guard let image = UIImage(data: imageData) else {
-            return UIImage()
-        }
 
-        return image
+        return imageData
     } catch {
-        return UIImage()
+        return Data()
     }
 }
 
@@ -308,20 +299,24 @@ func deleteImage(namePhoto: String) {  // Удаление картинки
 func clearMemory() {
     let mainProfile = MainProfile.instance
     let friendProfile = FriendProfile.instance
-    
+
     DispatchQueue.global().async {
         DispatchQueue.main.async {
             for i in stride(from: 1, through: mainProfile.favoriteАnime.count, by: 1) {
                 if mainProfile.favoriteАnime[i-1].close {
                     mainProfile.favoriteАnime[i-1].close = false
-                    mainProfile.favoriteАnime[i-1].colectionImG.removeAll()
+                    for k in stride(from: 1, through: mainProfile.favoriteАnime[i-1].colectionImageData.count, by: 1) {
+                        mainProfile.favoriteАnime[i-1].colectionImageData[k-1] = Data()
+                    }
                 }
             }
-            
+
             for i in stride(from: 1, through: friendProfile.favoriteАnime.count, by: 1) {
                 if friendProfile.favoriteАnime[i-1].close {
                     friendProfile.favoriteАnime[i-1].close = false
-                    friendProfile.favoriteАnime[i-1].colectionImG.removeAll()
+                    for k in stride(from: 1, through: friendProfile.favoriteАnime[i-1].colectionImageData.count, by: 1) {
+                        friendProfile.favoriteАnime[i-1].colectionImageData[k-1] = Data()
+                    }
                 }
             }
         }
@@ -386,3 +381,5 @@ func getDayOfWeek(_ today:String) -> String? {
     default: return ""
     }
 }
+
+

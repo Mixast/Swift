@@ -36,14 +36,14 @@ class TableViewTwoController: UIViewController, UITableViewDelegate, UITableView
             for i in 1...self.mainProfile.friends.count {
                 let namePhoto = namedConstructor(text: self.mainProfile.friends[i-1].avatarName)
                 
-                if loadImage(namePhoto: namePhoto).pngData() == nil {
+                if loadImage(namePhoto: namePhoto) == Data() {
                     let imageURL = NSURL(string: self.mainProfile.friends[i-1].avatarName)
                     if let data = try? Data(contentsOf: imageURL! as URL) {
-                        self.mainProfile.friends[i-1].avatar = UIImage(data: data)!
-                        fileSistemSave(namePhoto: namePhoto, img: UIImage(data: data)!)
+                        self.mainProfile.friends[i-1].avatarData = data
+                        fileSistemSave(namePhoto: namePhoto, data: data)
                     }
                 } else {
-                    self.mainProfile.friends[i-1].avatar = loadImage(namePhoto: namePhoto)
+                    self.mainProfile.friends[i-1].avatarData = loadImage(namePhoto: namePhoto)
                 }
             }
             DispatchQueue.main.async { [weak self] in
@@ -175,10 +175,10 @@ class TableViewTwoController: UIViewController, UITableViewDelegate, UITableView
         
         if searching {
             cell.textLabel?.text = filteredList[indexPath.row].name
-            cell.imageView?.image = filteredList[indexPath.row].avatar  // Добавляем аватарку
+            cell.imageView?.image = UIImage(data: filteredList[indexPath.row].avatarData) // Добавляем аватарку
         } else {
             cell.textLabel?.text = mainProfile.friends[idx+indexPath.row].name
-            cell.imageView?.image =  mainProfile.friends[idx+indexPath.row].avatar      // Добавляем аватарку
+            cell.imageView?.image = UIImage(data: mainProfile.friends[idx+indexPath.row].avatarData)      // Добавляем аватарку
             cell.imageView?.layer.cornerRadius = 25.0                                    // Делаем её круглой
             cell.imageView?.layer.masksToBounds = true
         }
@@ -203,7 +203,7 @@ class TableViewTwoController: UIViewController, UITableViewDelegate, UITableView
                 if mainProfile.friends[i-1].name == filteredList[indexPath.row].name {
                     friendProfile.avatarName = filteredList[indexPath.row].avatarName
                     friendProfile.id = filteredList[indexPath.row].id
-                    friendProfile.avatar = filteredList[indexPath.row].avatar
+                    friendProfile.avatarData = filteredList[indexPath.row].avatarData
                     friendProfile.name = filteredList[indexPath.row].name
                     
                     let detailVC = self.storyboard?.instantiateViewController(withIdentifier: "TabTwoTableController") as! TabTwoTableController
@@ -216,7 +216,7 @@ class TableViewTwoController: UIViewController, UITableViewDelegate, UITableView
         } else {
                     friendProfile.avatarName = mainProfile.friends[idx+indexPath.row].avatarName
                     friendProfile.id = mainProfile.friends[idx+indexPath.row].id
-                    friendProfile.avatar = mainProfile.friends[idx+indexPath.row].avatar
+                    friendProfile.avatarData = mainProfile.friends[idx+indexPath.row].avatarData
                     friendProfile.name = mainProfile.friends[idx+indexPath.row].name
             
                             let detailVC = self.storyboard?.instantiateViewController(withIdentifier: "TabTwoTableController") as! TabTwoTableController

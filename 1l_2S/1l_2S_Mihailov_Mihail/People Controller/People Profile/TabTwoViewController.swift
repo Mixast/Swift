@@ -79,12 +79,6 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
 //     MARK: - Прогружаем список аниме друга
     private func loadFriendAnime(id: Int, completioHandler : (() ->Void)?) {
         
-//        var urlComponents = URLComponents()
-//        urlComponents.scheme = "https"
-//        urlComponents.host = "shikimori.one"
-//        urlComponents.path = "/api/users/\(id)/anime_rates?&limit=50"
-        
-        
         let url = "https://shikimori.one/api/users/\(id)/anime_rates?&limit=60"
         let accessToken = decryptMessage(encryptedMessage: self.keychain.get(Keys.accessToken)!, encryptionKey: "hooP")
         
@@ -95,9 +89,6 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
         r.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         
         request(r).responseJSON() { response in
-    
-        
-//        request("https://shikimori.one/api/users/\(id)/anime_rates?&limit=60",  method: .get).validate(contentType: ["application/json"]).responseJSON() { response in
             
             switch response.result {
             case .success(let value):
@@ -258,7 +249,10 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
         switch indexPath.section {
         case 0:
             cell.infoText.text = friendProfile.name
-            cell.createIconAvatar(image: friendProfile.avatar)
+            guard let image = UIImage(data: friendProfile.avatarData) else {
+                return cell
+            }
+            cell.createIconAvatar(image: image)
             cell.textLabel?.text = ""
             self.view.viewWithTag(90)
         case 1:
@@ -303,7 +297,7 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
                     detailVC.transportLine = indexPath.row
                     detailVC.profile = "friendProfile"
                     detailVC.transitioningDelegate = self
-//                    self.present(detailVC, animated: true)
+                    self.present(detailVC, animated: true)
                     
                 }
             }
@@ -321,7 +315,7 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
                 self.friendProfile.favoriteАnime[section].colectionImage.removeAll()
                 for (_, subJson):(String, JSON) in json[] {
                 self.friendProfile.favoriteАnime[section].colectionImage.append(subJson["original"].stringValue)
-                self.friendProfile.favoriteАnime[section].colectionImG.append(UIImage())
+                    self.friendProfile.favoriteАnime[section].colectionImageData.append(Data())
                 }
             case .failure(let error):
                 let arres = error.localizedDescription

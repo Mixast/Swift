@@ -5,6 +5,7 @@ import SwiftyJSON
 import KeychainSwift
 import RNCryptor
 import CoreFoundation
+import RealmSwift
 
 class LoginViewController: UIViewController, WKNavigationDelegate {
     let keychain = KeychainSwift()
@@ -74,15 +75,36 @@ class LoginViewController: UIViewController, WKNavigationDelegate {
         super.loadView()
 
         if self.keychain.get(Keys.accessToken) != nil && self.keychain.get(Keys.refreshToken) != nil {
-
+            refreshToken()
             self.loadProfile {
                 DispatchQueue.main.async {
-                    self.loadAnime {
-                        DispatchQueue.main.async {
-                            self.loadFriends {
-                                DispatchQueue.main.async {
-                                    UserDefaults.standard.set(false, forKey: Keys.chek)
-                                    self.performSegue(withIdentifier: "goToStart", sender: self)
+                    guard let realm =  try? Realm() else {
+                        return
+                    }
+                    let object = realm.objects(RealmBase.self)
+                    if object.count != 0 {
+                        for i in 1...object.count {
+                            let base: RealmBase = realmLoad(index: i-1)
+                            if base.id == self.mainProfile.id {
+                                transportRealmIndex = i-1
+                                
+                                realmLoadAnime()
+                                realmLoadFriends()
+      
+                                self.performSegue(withIdentifier: "goToStart", sender: self)
+                                
+                                return
+                            }
+                        }
+                    } else {
+                        self.loadAnime {
+                            DispatchQueue.main.async {
+                                self.loadFriends {
+                                    DispatchQueue.main.async {
+                                        UserDefaults.standard.set(false, forKey: Keys.chek)
+                                        realmSave()
+                                        self.performSegue(withIdentifier: "goToStart", sender: self)
+                                    }
                                 }
                             }
                         }
@@ -224,15 +246,8 @@ class LoginViewController: UIViewController, WKNavigationDelegate {
                 self.mainProfile.avatar = json["image"]["x148"].stringValue
                 
             case .failure(let error):
-                let json = JSON(error)
-                let task = json["error"].stringValue
-                
-                if task == "invalid_token" {
-                    self.refreshToken()
-                } else {
-                    let arres = error.localizedDescription
-                    self.showAlert(massage: arres, title: "Error access_token")
-                }
+                let arres = error.localizedDescription
+                self.showAlert(massage: arres, title: "Error access_token")
                 return
             }
             completioHandler?()
@@ -266,6 +281,7 @@ class LoginViewController: UIViewController, WKNavigationDelegate {
                 
                 self.keychain.set(keychainselfAccessToken, forKey: Keys.accessToken)
                 self.keychain.set(keychainselfRefreshToken, forKey: Keys.refreshToken)
+                
                 
             case .failure(let error):
                 let arres = error.localizedDescription
@@ -334,9 +350,6 @@ class LoginViewController: UIViewController, WKNavigationDelegate {
         let action = UIAlertAction(title: "Ok", style: .default, handler: nil)
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
-    
-    
-    
     
     }
 }
