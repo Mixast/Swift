@@ -1,9 +1,10 @@
 import UIKit
 import Alamofire
 import SwiftyJSON
+import RealmSwift
 
 class TabOneCollectionViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UICollectionViewDataSourcePrefetching {
-
+    
     @IBOutlet weak var backgoundImage: UIImageView!
     @IBOutlet weak var collectionView: UICollectionView!
     
@@ -27,8 +28,8 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
         }
     }
     
-    
     override func viewDidLoad() {
+
         super.viewDidLoad()
         collectionView.dataSource = self
         collectionView.delegate = self
@@ -38,6 +39,26 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
             mainProfile.favoriteАnime[transportLine].close = true
             navigationItem.title = mainProfile.favoriteАnime[transportLine].name  // Имя поля
             self.backgoundImage.image = UIImage(data: mainProfile.favoriteАnime[transportLine].avatarImageData)
+            
+            DispatchQueue.global().async {
+                guard let realm =  try? Realm() else {
+                    print("Error Realm")
+                    return
+                }
+                
+                let object = realm.objects(RealmBase.self)
+                guard let base = Optional(object[transportRealmIndex]) else {
+                    return
+                }
+                
+                if base.favoriteАnime[self.transportLine].colectionImageData.count != 0 {
+                    for i in 1...base.favoriteАnime[self.transportLine].colectionImageData.count {
+                        self.mainProfile.favoriteАnime[self.transportLine].colectionImageData[i-1] = base.favoriteАnime[self.transportLine].colectionImageData[i-1]
+                    }
+                }
+
+            }
+            
         } else {
             friendProfile.favoriteАnime[transportLine].close = true
             self.setNavigationBar()
@@ -57,7 +78,7 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
             swipeRight.direction = UISwipeGestureRecognizer.Direction.right
             self.view.addGestureRecognizer(swipeRight)  //Ловим свайп
         }
-            
+        
         self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
         self.navigationController?.navigationBar.shadowImage = UIImage()
         self.navigationController?.navigationBar.isTranslucent = true
@@ -65,7 +86,7 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
         collectionView.backgroundColor = .clear
         
         sizeWidthCell = self.view.frame.size.width / 3
-        sizeHeightCell = self.view.frame.size.height / 4
+        sizeHeightCell = self.view.frame.size.height / 3
         
     }
     
@@ -77,7 +98,7 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
     override func viewDidLayoutSubviews() {
         
         if self.flack == true {
-            self.sizeWidthCell = self.view.frame.size.width / 3
+            self.sizeWidthCell = self.view.frame.size.width / 2.5
             self.sizeHeightCell = self.view.frame.size.height / 4
         } else {
             self.sizeWidthCell = self.view.frame.size.width
@@ -125,33 +146,38 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
     @objc func handleShowIndexPath() {      //Подключение любой кнопки
         dismiss(animated: true)
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if profile == "mainProfile" {
             return mainProfile.favoriteАnime[transportLine].colectionImage.count
         } else {
-           return friendProfile.favoriteАnime[transportLine].colectionImage.count
+            return friendProfile.favoriteАnime[transportLine].colectionImage.count
         }
     }
-
+    
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: sizeWidthCell, height: sizeHeightCell)
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CustomCollectionViewCell", for: indexPath) as! CustomCollectionViewCell
         
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(imageTapped(tapGestureRecognizer:)))
+        cell.imageAnime.addGestureRecognizer(tapGestureRecognizer)
+        cell.imageAnime.tag = ((indexPath.section*100)+indexPath.row+1)
+        
         if profile == "mainProfile" {
             if mainProfile.favoriteАnime[transportLine].colectionImageData[indexPath.row] == Data() {
-                DispatchQueue.global().async {
-                    self.requestImage(forIndex: indexPath)
-                }
-                cell.imageAnime.image = #imageLiteral(resourceName: "icons8-vnim-50")
+                    DispatchQueue.global().async {
+                        self.requestImage(forIndex: indexPath)
+                    }
+                    cell.imageAnime.image = #imageLiteral(resourceName: "icons8-vnim-50")
+
             } else {
-            cell.imageAnime.image = UIImage(data: mainProfile.favoriteАnime[transportLine].colectionImageData[indexPath.row])
+                cell.imageAnime.image = UIImage(data: mainProfile.favoriteАnime[transportLine].colectionImageData[indexPath.row])
             }
         } else {
             if friendProfile.favoriteАnime[transportLine].colectionImageData[indexPath.row] == Data() {
@@ -163,10 +189,7 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
                 cell.imageAnime.image = UIImage(data: friendProfile.favoriteАnime[transportLine].colectionImageData[indexPath.row])
             }
         }
-
-        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(imageTapped(tapGestureRecognizer:)))
-        cell.imageAnime.addGestureRecognizer(tapGestureRecognizer)
-        cell.imageAnime.tag = ((indexPath.section*100)+indexPath.row+1)
+    
         return cell
     }
     
@@ -176,6 +199,7 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
         
         for indexPath in indexPaths {
             if profile == "mainProfile" {
+
                 if mainProfile.favoriteАnime[transportLine].colectionImageData[indexPath.row] == Data() {
                     self.requestImage(forIndex: indexPath)
                 }
@@ -187,14 +211,14 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
                 }
             }
         }
-    
+        
     }
     
     
     func collectionView(_ collectionView: UICollectionView, cancelPrefetchingForItemsAt indexPaths: [IndexPath]) {
         
         for indexPath in indexPaths {
-
+            
             if let task = tasks[indexPath.row] {
                 if task.state != URLSessionTask.State.canceling {
                     task.cancel()
@@ -202,7 +226,7 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
             }
         }
     }
-
+    
     func requestImage(forIndex: IndexPath) {
         if profile == "mainProfile" {
             if self.mainProfile.favoriteАnime[self.transportLine].colectionImageData[forIndex.row] != Data() {
@@ -214,7 +238,7 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
             }
         }
         
-        
+  
         var task: URLSessionDataTask
         
         if tasks[forIndex.row] != nil
@@ -222,14 +246,14 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
             // Wait for task to finish
             return
         }
-
+        
         task = getTask(forIndex: forIndex)
         tasks[forIndex.row] = task
         task.resume()
     }
-//  URLSessionDataTask
+    //  URLSessionDataTask
     func getTask(forIndex: IndexPath) -> URLSessionDataTask  {
-
+        
         if profile == "mainProfile" {
             if self.mainProfile.favoriteАnime[self.transportLine].colectionImageData[forIndex.row] != Data() {
                 return URLSessionDataTask()
@@ -240,8 +264,26 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
             return URLSession.shared.dataTask(with: imgURL) { data, response, error in
                 DispatchQueue.global().async {
                     guard let data = data, error == nil else { return }
+                    
+                    self.mainProfile.favoriteАnime[self.transportLine].colectionImageData[forIndex.row] = data
+                    DispatchQueue.global().async {
+                        guard let realm =  try? Realm() else {
+                            print("Error Realm")
+                            return
+                        }
+                        
+                        let object = realm.objects(RealmBase.self)
+                        guard let base = Optional(object[transportRealmIndex]) else {
+                            return
+                        }
+                        if base.favoriteАnime[self.transportLine].colectionImageData[forIndex.row] == Data() {
+                            
+                            try! realm.write {
+                                base.favoriteАnime[self.transportLine].colectionImageData[forIndex.row] = data
+                            }
+                        }
+                    }
                     DispatchQueue.main.async() {
-                        self.mainProfile.favoriteАnime[self.transportLine].colectionImageData[forIndex.row] = data
                         self.collectionView.reloadItems(at: [forIndex])
                     }
                 }
@@ -265,18 +307,18 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
     }
     
     
-// MARK: -  Анимация увеличения картинки
-
+    // MARK: -  Анимация увеличения картинки
+    
     @objc func imageTapped(tapGestureRecognizer: UITapGestureRecognizer)
     {
-
+        
         let touch = tapGestureRecognizer.location(in: collectionView)
         if let indexPath = collectionView.indexPathForItem(at: touch) {
             let originX = self.view.viewWithTag((indexPath.section*100)+indexPath.row+1)!.frame.origin.x
             let originY = self.view.viewWithTag((indexPath.section*100)+indexPath.row+1)!.frame.origin.y
             let originSizeWidth = self.view.viewWithTag((indexPath.section*100)+indexPath.row+1)!.frame.size.width
             let originSizeHeight = self.view.viewWithTag((indexPath.section*100)+indexPath.row+1)!.frame.size.height
-
+            
             UIView.animateKeyframes(withDuration: 1, delay: 0, options: [], animations: {
                 UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 0.5, animations: {
                     self.view.viewWithTag((indexPath.section*100)+indexPath.row+1)!.frame = CGRect(x: originX, y: originY, width: originSizeWidth+80, height: originSizeHeight+80)

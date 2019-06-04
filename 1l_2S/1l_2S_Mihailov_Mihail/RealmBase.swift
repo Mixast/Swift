@@ -24,8 +24,6 @@ class RealmBase: Object {
 }
 
 class FavoriteАnime: Object {
-    @objc dynamic var close = false
-    @objc dynamic var flack = false
     @objc dynamic var descriptionFlack = false
     @objc dynamic var id = 0
     @objc dynamic var name = ""
@@ -58,8 +56,6 @@ func realmSave() {
     
     for i in 1...mainProfile.favoriteАnime.count {
         let anime = FavoriteАnime()
-        anime.close = mainProfile.favoriteАnime[i-1].close
-        anime.flack = mainProfile.favoriteАnime[i-1].flack
         anime.descriptionFlack = mainProfile.favoriteАnime[i-1].descriptionFlack
         anime.id = mainProfile.favoriteАnime[i-1].id
         anime.name = mainProfile.favoriteАnime[i-1].name
@@ -127,11 +123,9 @@ func realmLoadAnime() {
     let mainProfile = MainProfile.instance
     let anime = realmLoad(index: transportRealmIndex)
     if anime.favoriteАnime.count != 0 {
-        print(anime.favoriteАnime.count)
+   
         for i in 1...anime.favoriteАnime.count {
             var animeSeve = Аnime()
-            animeSeve.close = anime.favoriteАnime[i-1].close
-            animeSeve.flack = anime.favoriteАnime[i-1].flack
             animeSeve.descriptionFlack = anime.favoriteАnime[i-1].descriptionFlack
             animeSeve.id = anime.favoriteАnime[i-1].id
             animeSeve.name = anime.favoriteАnime[i-1].name
@@ -153,8 +147,8 @@ func realmLoadAnime() {
             
             if anime.favoriteАnime[i-1].colectionImageData.count != 0 {
                 var base = [Data]()
-                for k in 1...anime.favoriteАnime[i-1].colectionImageData.count {
-                    base.append(anime.favoriteАnime[i-1].colectionImageData[k-1])
+                for _ in 1...anime.favoriteАnime[i-1].colectionImageData.count {
+                    base.append(Data())
                 }
                 animeSeve.colectionImageData = base
             }

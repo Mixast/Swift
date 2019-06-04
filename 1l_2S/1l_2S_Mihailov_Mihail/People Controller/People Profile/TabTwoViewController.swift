@@ -314,7 +314,7 @@ class TabTwoTableController: UIViewController, UITableViewDataSource, UITableVie
                 
                 self.friendProfile.favoriteАnime[section].colectionImage.removeAll()
                 for (_, subJson):(String, JSON) in json[] {
-                self.friendProfile.favoriteАnime[section].colectionImage.append(subJson["original"].stringValue)
+                self.friendProfile.favoriteАnime[section].colectionImage.append(subJson["preview"].stringValue)
                     self.friendProfile.favoriteАnime[section].colectionImageData.append(Data())
                 }
             case .failure(let error):
