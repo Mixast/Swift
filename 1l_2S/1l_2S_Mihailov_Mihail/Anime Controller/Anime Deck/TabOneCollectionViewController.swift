@@ -84,9 +84,19 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
         self.navigationController?.navigationBar.isTranslucent = true
         
         collectionView.backgroundColor = .clear
+        if self.view.frame.size.width < self.view.frame.size.height {
+            sizeWidthCell = self.view.frame.size.width / 1.45
+            sizeHeightCell = self.view.frame.size.height / 4
+        } else {
+            if self.view.frame.size.width < 1024 {
+                sizeWidthCell = self.view.frame.size.width / 3
+                sizeHeightCell = self.view.frame.size.height / 3.2
+            } else {
+                sizeWidthCell = self.view.frame.size.width / 3
+                sizeHeightCell = self.view.frame.size.height / 4
+            }
+        }
         
-        sizeWidthCell = self.view.frame.size.width / 3
-        sizeHeightCell = self.view.frame.size.height / 3
         
     }
     
@@ -98,8 +108,18 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
     override func viewDidLayoutSubviews() {
         
         if self.flack == true {
-            self.sizeWidthCell = self.view.frame.size.width / 2.5
-            self.sizeHeightCell = self.view.frame.size.height / 4
+            if self.view.frame.size.width < self.view.frame.size.height {
+                self.sizeWidthCell = self.view.frame.size.width / 1.45
+                self.sizeHeightCell = self.view.frame.size.height / 4
+            } else {
+                if self.view.frame.size.width < 1024 {
+                    self.sizeWidthCell = self.view.frame.size.width / 3
+                    self.sizeHeightCell = self.view.frame.size.height / 3.2
+                } else {
+                    self.sizeWidthCell = self.view.frame.size.width / 3
+                    self.sizeHeightCell = self.view.frame.size.height / 4
+                }
+            }
         } else {
             self.sizeWidthCell = self.view.frame.size.width
             self.sizeHeightCell = self.view.frame.size.height
@@ -170,6 +190,7 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
         cell.imageAnime.tag = ((indexPath.section*100)+indexPath.row+1)
         
         if profile == "mainProfile" {
+            
             if mainProfile.favoriteАnime[transportLine].colectionImageData[indexPath.row] == Data() {
                     DispatchQueue.global().async {
                         self.requestImage(forIndex: indexPath)
@@ -178,6 +199,27 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
 
             } else {
                 cell.imageAnime.image = UIImage(data: mainProfile.favoriteАnime[transportLine].colectionImageData[indexPath.row])
+                DispatchQueue.global().async {
+                    guard let realm =  try? Realm() else {
+                        print("Error Realm")
+                        return
+                    }
+                    
+                    let object = realm.objects(RealmBase.self)
+                    guard let base = Optional(object[transportRealmIndex]) else {
+                        return
+                    }
+                    if base.favoriteАnime[self.transportLine].colectionImageData.count < indexPath.row {
+                        return 
+                    }
+                    
+                    if base.favoriteАnime[self.transportLine].colectionImageData[indexPath.row] == Data() {
+                        
+                        try! realm.write {
+                            base.favoriteАnime[self.transportLine].colectionImageData[indexPath.row] = self.mainProfile.favoriteАnime[self.transportLine].colectionImageData[indexPath.row]
+                        }
+                    }
+                }
             }
         } else {
             if friendProfile.favoriteАnime[transportLine].colectionImageData[indexPath.row] == Data() {
@@ -266,26 +308,12 @@ class TabOneCollectionViewController: UIViewController, UICollectionViewDataSour
                     guard let data = data, error == nil else { return }
                     
                     self.mainProfile.favoriteАnime[self.transportLine].colectionImageData[forIndex.row] = data
-                    DispatchQueue.global().async {
-                        guard let realm =  try? Realm() else {
-                            print("Error Realm")
-                            return
-                        }
-                        
-                        let object = realm.objects(RealmBase.self)
-                        guard let base = Optional(object[transportRealmIndex]) else {
-                            return
-                        }
-                        if base.favoriteАnime[self.transportLine].colectionImageData[forIndex.row] == Data() {
-                            
-                            try! realm.write {
-                                base.favoriteАnime[self.transportLine].colectionImageData[forIndex.row] = data
-                            }
-                        }
-                    }
+                    
+                    
                     DispatchQueue.main.async() {
                         self.collectionView.reloadItems(at: [forIndex])
                     }
+                    
                 }
             }
         } else {

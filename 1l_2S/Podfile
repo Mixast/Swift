@@ -13,4 +13,6 @@ target '1l_2S_Mihailov_Mihail' do
 	pod 'SwiftyJSON'
 	pod 'Kanna'
 	pod 'RealmSwift'
+	pod 'Firebase/Core'
+	pod 'Firebase/Firestore'
 end
